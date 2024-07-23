@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<TcSmItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.beckhoff.com/schemas/2012/07/TcSmProject" TcSmVersion="1.0" TcVersion="3.1.4024.56" ClassName="CNestedPlcProjDef">
+	<Project GUID="{F2FC4539-3283-4853-9673-ED7C06BDF515}" Name="EOL TESTER" PrjFilePath="..\..\EOL TESTER\EOL TESTER.plcproj" TmcFilePath="..\..\EOL TESTER\EOL TESTER.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+		<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2">
+			<Name>EOL TESTER Instance</Name>
+			<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+			<Contexts>
+				<Context>
+					<Id>1</Id>
+					<Name>Default</Name>
+				</Context>
+			</Contexts>
+		</Instance>
+	</Project>
+</TcSmItem>

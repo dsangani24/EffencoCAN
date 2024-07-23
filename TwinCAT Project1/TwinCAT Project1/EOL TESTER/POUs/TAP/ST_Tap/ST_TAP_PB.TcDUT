@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_TAP_PB" Id="{4fe0a92e-cce7-4826-9001-ed40f4c77175}">
+    <Declaration><![CDATA[TYPE ST_TAP_PB :
+STRUCT
+    Allconnected : BOOL;            //All Hydraulic and Electrical Devices are connected
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

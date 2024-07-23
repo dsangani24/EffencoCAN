@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_StepBranch" Id="{ee73df1d-90cc-41a5-96c3-cfb3f937fbcd}">
+    <Declaration><![CDATA[TYPE ST_StepBranch :
+STRUCT    
+    NextStep        : DINT;
+    Condition       : ARRAY [1..16] OF BOOL;
+    ConditionMet    : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

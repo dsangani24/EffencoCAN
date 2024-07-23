@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="SequenceStep_FB" Id="{8695b3ad-ee8c-4295-8a02-f60d681ecd92}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK SequenceStep_FB
+VAR_INPUT
+    Branch          : ARRAY [1..16] OF ST_StepBranch;
+END_VAR
+VAR_OUTPUT    
+    CurrentStep     : DINT;    
+    Entry           : BOOL := TRUE;
+END_VAR
+VAR
+    i : SINT;
+    j : SINT;
+    Firstscan : BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Entry := FALSE;
+
+IF FirstScan THEN
+    Initialize:
+    FOR i:= 1 TO 16 DO
+        FOR j:= 1 TO 16 DO
+            Branch[i].Condition[j] := TRUE;
+        END_FOR    
+	END_FOR
+    Firstscan := FALSE; 
+    RETURN;   
+END_IF
+
+FOR i:= 1 TO 16 DO
+    Branch[i].ConditionMet := TRUE;
+    FOR j:= 1 TO 16 DO        
+        Branch[i].ConditionMet := Branch[i].Condition[j] AND Branch[i].ConditionMet;
+	END_FOR
+    IF Branch[i].ConditionMet THEN        
+        CurrentStep := Branch[i].NextStep;
+        Entry := TRUE;
+        JMP Initialize;
+	END_IF
+    //
+END_FOR]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

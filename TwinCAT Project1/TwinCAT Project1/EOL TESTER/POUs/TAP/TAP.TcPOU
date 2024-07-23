@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="TAP" Id="{7b07e302-e7ca-401f-8bc6-0b4690ea1021}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TAP
+VAR
+	LevelSensor AT%I*	 : DINT;
+	PressureSensor AT%I* : INT; 
+	TransmissionFluidValve : ActuatorSimple;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Control Devices" Id="{f86a918a-9344-4cec-9162-710279df1dfd}" />
+    <Folder Name="Enumeration" Id="{a9dffc3a-cedb-4265-8fd7-84492867030b}" />
+    <Folder Name="Structure" Id="{f28d939a-6ded-46ff-8d5a-9c3d3fc27ecb}" />
+    <Method Name="M_LevelSensor" Id="{fa9ffbc1-dad2-4521-8bdd-9a46c0d3282f}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_LevelSensor : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Motor" Id="{1cbee92e-8ce6-4c39-9f69-6d18ed9c96fd}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_Motor
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Sequence" Id="{1a61ce00-3bf2-4a7e-86ef-1d0432e08a99}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Sequence
+VAR_INPUT
+	AutoInitiate 	    : BOOL;
+	AutoFirstStep	    : DINT;
+END_VAR                 
+VAR_INST                
+	SequenceStep		    : SequenceStep_FB;
+	FirstEntry		        : BOOL := TRUE;
+	CaseEntry		        : ARRAY [1..20] OF BOOL := [20(TRUE)];
+	PressureAtEntry         : INT;
+    PressureCheckStatus     : INT;
+    FailedintitialPressure  : INT;
+    Tolerance               : INT;
+	FailReasonStr	        : STRING;
+    PassReasonStr           : STRING;
+    FailPressureStr         : STRING;
+    TAPStation              : ST_Station;
+    TEMotor                 : Motor_FB;
+    LeakDecayTimer          : TON;
+END_VAR
+VAR    
+    Branch                  : ARRAY [1..16] OF ST_StepBranch;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FirstEntry THEN
+	SequenceStep.CurrentStep := AutoFirstStep;
+END_IF
+
+IF AutoInitiate THEN
+FirstEntry := FALSE;
+CASE SequenceStep.CurrentStep OF
+	E_TapAutoSequenceSteps.STARTING_CONDITIONS:
+		IF SequenceStep.Entry THEN
+            // Action
+            MotorOn
+            LeakDecayTimer(IN := TRUE, PT := T#2S);
+		END_IF
+        
+        // Execute During
+        
+        
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.TE_RUN_MOTOR;
+        Branch[1].Condition[1] := TAPStation.Status.Auto;
+        Branch[1].Condition[2] := TAPStation.Status.AllParts;
+        Branch[1].Condition[3] := TAPStation.Mode.Auto;                 
+        SequenceStep(Branch := Branch);
+
+	E_TapAutoSequenceSteps.TE_RUN_MOTOR:
+		// Action
+		IF SequenceStep.Entry THEN
+		Motor_FB.M_Start();	
+		END_IF
+        
+    	// Condition for Next Step: TE MOTOR DELAY
+		IF Motor_FB.M_Delay = T#10S THEN					
+		END_IF
+        
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.TE_RUN_MOTOR;
+        Branch[1].Condition[1] := TAPStation.Status.Auto;
+        Branch[1].Condition[2] := TAPStation.Status.AllParts;
+        Branch[1].Condition[3] := TAPStation.Mode.Auto;  
+
+        //Branch #2
+        Branch[2].NextStep := E_TapAutoSequenceSteps.END_FILLING_PHASE;
+        
+               
+        SequenceStep(Branch := Branch);
+        
+	E_TapAutoSequenceSteps.TE_MOTOR_START_DELAY:	
+        //Action
+        IF CaseEntry[2] THEN
+         Motor_FB.M_Delay();
+         CaseEntry[2] := FALSE;
+		END_IF
+             
+        //Condition for next step: UUT MOTOR RAMP-UP TO SPEED= "UMLS" 
+        IF
+        END_IF  
+        
+        //Condition for next step: UUT motor steady durig "UMD1"
+        IF
+           
+		END_IF
+        
+        //Condition for next step: INITIAL PRESSURE COMPARISION
+	E_TapAutoSequenceSteps.INITIAL_PRESSURE_TEST:
+        //Action
+	IF CaseEntry[5] THEN
+        CurrentStep := E_TapAutoSequenceSteps.INITIAL_PRESSURE_TEST;			
+		LeakDecayTimer (IN := PressureAtEntry=50, PT := T#5S);
+	END_IF
+	IF LeakDecayTimer.Q THEN
+	IF PressureSensor < PressureAtEntry - Tolerance OR PressureSensor > PressureAtEntry + Tolerance THEN
+		PressureCheckStatus := E_Pressurereject.PressureTestFail;
+		FailReasonStr := TO_STRING(E_Pressurereject.TAPLeakCheckPass);
+        CaseEntry[5] := FALSE;
+	ELSE
+		PressureCheckStatus := E_Pressurereject.PressureTestPass
+        PassReasonStr := TO_STRING(E_Pressurereject.TAPLeakCheckFail);
+        CaseEntry[5] := FALSE;
+	END_IF
+	END_IF
+    
+       //Condition for next Setp: END OF FILLING-UP PHASE
+     
+    IF CaseEntry[6] AND PressureCheckStatus:= 10 THEN
+        CurrentStep := E_TapAutoSequenceSteps.END_FILLING_PHASE;
+  	END_IF
+    
+    E_TapAutoSequenceSteps.END_FILLING_PHASE:
+    IF PressureCheckStatus := E_Pressurereject.PressureTestFail THEN
+       FailedintitialPressure := PressureAtEntry; 
+       FailPressurestr  := TO_STRING(E_Pressurereject.FailPressureCheck);
+       Motor_FB.M_Stop();
+    END_IF
+    
+    E_TapAutoSequenceSteps.END_FILLING_PHASE:
+        //
+    
+ 
+END_CASE
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TransmissionFluidPressure" Id="{33dd7d50-7a6c-4d2a-9fed-e48f71a9775d}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_TransmissionFluidPressure : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TransmissionFluidValve" Id="{a772b3da-3625-48fe-a901-c21874fc7ff9}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_TransmissionFluidValve
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>
