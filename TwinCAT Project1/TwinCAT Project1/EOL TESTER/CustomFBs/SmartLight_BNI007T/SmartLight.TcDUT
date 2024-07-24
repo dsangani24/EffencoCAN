@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="SmartLight" Id="{cb394f60-97a6-4577-a08b-846474a435bd}">
+    <Declaration><![CDATA[TYPE SmartLight :
+STRUCT
+    I: SmartLight_BNI007T;
+	O: BYTE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

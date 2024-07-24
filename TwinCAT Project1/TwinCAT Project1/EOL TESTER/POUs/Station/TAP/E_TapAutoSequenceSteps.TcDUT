@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_TapAutoSequenceSteps" Id="{d33c5291-9079-49e7-b328-0c3e02be93c3}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_TapAutoSequenceSteps :
+(
+	STARTING_CONDITIONS		    := 10,
+    START_FILLING_PHASE 	    := 20,
+	TE_RUN_MOTOR			    := 30,
+//	TE_MOTOR_START_DELAY	    := 40,
+	START_UUT_MOTOR			    := 50,
+	UUT_MOTOR_DELAY			    := 60,
+	INITIAL_PRESSURE_TEST	    := 70,
+    TE_STOP_MOTOR               := 80,
+    STOP_UUT_MOTOR              := 90,
+    END_FILLING_PHASE           := 100,
+    START_STATIC_PRESSURE_TEST  := 110,
+    OUTLET_PRESSURE_TEST        := 120,
+    OIL_LEAK_TEST               := 130,
+    END_STAITC_PRESSURE_TEST    := 140,
+    START_FUNCTIONAL_TEST       := 150,
+    UUT_SENSOR_CHECK            := 160,
+    END_FUNCTIONAL_TEST         := 170,
+    START_TAP_CHECKVALVE_TEST   := 180,
+    CHECK_VALVE_TEST            := 190,
+    END_TAP_CHECKVALVE_TEST     := 200,
+    START_DRAINING_TEST         := 210, 
+    STOP_DRAINING_TEST          := 220,    
+    COMPLETE                := 1000
+	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

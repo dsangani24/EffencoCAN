@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="GateBox_FB" Id="{2aa3d3f2-da59-438b-8a4f-7fa5cf0ecb94}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK GateBox_FB
+VAR 
+    Gate1   : ST_Gates;
+    Gate2   : ST_Gates;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//GateBox-1 Lock Solenoid
+IF GVL.stCell.Gates.DoorReqtoEnterInput[1] AND GVL.stCell.Gates.Request_To_Enter THEN
+    GVL.stCell.Gates.DoorUnlockRequest[1] := TRUE;
+ELSIF GVL.stCell.Gates.DoorPowerOn[1] AND  GVL.zz_Deep.0 AND GVL.zz_Deep.0 THEN
+    GVL.stCell.Gates.DoorUnlockRequest[1] := FALSE;
+END_IF
+
+GVL.stCell.Gates.DoorOktoUnlock[1] := (GVL.stCell.Gates.EntryGranted OR 
+                                          GVL.stCell.Gates.DoorOktoUnlock[1] OR 
+                                          GVL.zz_Deep.0)  AND 
+                                          GVL.stCell.Gates.DoorUnlockRequest[1];
+                                         
+//GateBox-1 - Smart light Mapping
+//White Light
+GVL.stCell.Gates.ReqtoEnterInput_LT[1] :=  GVL.stCell.Gates.DoorUnlockRequest[1] AND 
+                                            GVL.stCell.Gates.Request_To_Enter AND 
+                                            GVL.stCell.Gates.OK_To_Enter AND 
+                                            GVL.stCell.Gates.EntryGranted AND 
+                                            (NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK));  
+
+//Green Liight
+GVL.stCell.Gates.FaultResetInput_LT[1] :=  (Gate1.Reset OR (Gate1.closed AND NOT Gate1.Reset AND Gate1.Maintenance_Mode) AND 
+                                            (NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK)))  OR
+                                            (Gate1.Maintenance_Mode AND NOT Gate1.Teach_Mode_OK);
+                                            
+                                            
+//Red Light
+GVL.stCell.Gates.FaultResetInput_LT[1] :=  (GVL.stCell.Status.All_Faults AND 
+                                            ( NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK))) OR
+                                            Gate1.DoorFaultResetInput   OR
+                                            (Gate1.Maintenance_Mode AND NOT Gate1.Teach_Mode_OK);
+                                            
+
+                                            
+                                            
+                                            
+                                            
+//GateBox-2 Lock Solenoid
+IF GVL.stCell.Gates.DoorReqtoEnterInput[2] AND GVL.stCell.Gates.Request_To_Enter THEN
+    GVL.stCell.Gates.DoorUnlockRequest[2] := TRUE;
+ELSIF GVL.stCell.Gates.DoorPowerOn[1] AND  GVL.zz_Deep.0 AND GVL.zz_Deep.0 THEN
+    GVL.stCell.Gates.DoorUnlockRequest[2] := FALSE;
+END_IF
+
+GVL.stCell.Gates.DoorOktoUnlock[2] := (GVL.stCell.Gates.EntryGranted OR 
+                                          GVL.stCell.Gates.DoorOktoUnlock[2] OR 
+                                          GVL.zz_Deep.0)  AND 
+                                          GVL.stCell.Gates.DoorUnlockRequest[2];
+
+//GateBox-2 - Smart light Mapping
+//White Light
+GVL.stCell.Gates.ReqtoEnterInput_LT[2] :=  GVL.stCell.Gates.DoorUnlockRequest[2] AND 
+                                            GVL.stCell.Gates.Request_To_Enter AND 
+                                            GVL.stCell.Gates.OK_To_Enter AND 
+                                            GVL.stCell.Gates.EntryGranted AND 
+                                            (NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK));  
+
+//Green Liight
+GVL.stCell.Gates.FaultResetInput_LT[2] :=  (Gate2.Reset OR (Gate2.closed AND NOT Gate2.Reset AND Gate2.Maintenance_Mode) AND 
+                                            (NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK)))  OR
+                                            (Gate2.Maintenance_Mode AND NOT Gate2.Teach_Mode_OK);
+                                            
+                                            
+//Red Light
+GVL.stCell.Gates.FaultResetInput_LT[2] :=  (GVL.stCell.Status.All_Faults AND 
+                                            ( NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK))) OR
+                                            Gate2.DoorFaultResetInput   OR
+                                            (Gate2.Maintenance_Mode AND NOT Gate2.Teach_Mode_OK)                                           ]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

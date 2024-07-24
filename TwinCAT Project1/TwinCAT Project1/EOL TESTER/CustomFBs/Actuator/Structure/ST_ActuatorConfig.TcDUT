@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_ActuatorConfig" Id="{c9b1325e-4034-40fc-8667-5664a3ea5ea0}">
+    <Declaration><![CDATA[TYPE ST_ActuatorConfig :
+STRUCT
+	AdvancedFeedbackTimeout		: TON;
+	RetractedFeedbackTimeout	: TON := (PT := T#500MS);
+	AdvancedDwellTime			: TON;
+	RetractedDwellTime			: TON;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

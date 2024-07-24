@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_BNI007T" Id="{63b74d4d-09e3-4cd4-b704-2d2b76ba201e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_BNI007T
+VAR_INPUT
+    stLightData         : ST_BNI007T;
+    ECAT_MB_Address     : UINT;	
+    MB_Port_Num         : UINT;  // Port1=0 ... Port8=7
+END_VAR
+VAR_OUTPUT
+    Mapped_SmartLight   : BYTE;  //001 = Green, 010 = Process_Fault, 011 = InCycle, 100 = Blue, 101 = Orange, 110= Purple/User Defined (254,0,254), 111= White
+END_VAR
+VAR
+    GateLightMode       : BOOL;
+	OpLightMode         : BOOL;
+	Flash               : BOOL;	        
+	Green               : BOOL;
+	Red                 : BOOL;
+	Yellow              : BOOL;
+	Blue                : BOOL;
+	Orange              : BOOL;
+	Purple              : BOOL;
+	White               : BOOL;
+	All_PP_OK           : BOOL;
+	PartMissing         : BOOL;
+	OpClearToEnter      : BOOL;
+	PartNotRemoved      : BOOL;
+	MachineActive       : BOOL;
+	MachineInActive     : BOOL;
+	RejectPart          : BOOL;
+	RTE_Req             : BOOL;
+	RTE_OK              : BOOL;
+	MaintModeActive     : BOOL;
+	Gates_OK            : BOOL;
+	GateOpen            : BOOL;
+	Runlight_Mode       : BOOL;
+	Segment_Mode        : BOOL;
+	//Mode_Select_Message : IOL_Azylic_Communication_v11;
+	StartModeMsg        : BOOL;
+	ResetMsg            : BOOL;	// 
+	Write_Mode          : BOOL;
+	MsgExecInProgress   : BOOL;
+	MsgExecError        : BOOL;
+	MsgExecErrCode      : UINT;
+	ReadData            : ARRAY [0..231] OF BYTE;
+	WriteData           : ARRAY [0..19] OF BYTE;
+	ReadTmr             : ARRAY[0..5] OF TON;
+	ReadET              : ARRAY[0..5] OF TIME;
+	ONS                 : ARRAY[0..31] OF R_TRIG;
+	MsgExecDN           : BOOL;
+	debug               : DINT;
+	Index               : UINT;
+	Enable_Read         : BOOL;
+	Reset_Write_Tmr     : TON;
+	Reset_Read_Tmr      : TON;
+	Reset_Start_Mode_Select_Tmr: TON;
+	// True = Write Data, False = Read Data
+	Enable_Write_Mode   : BOOL;
+	Read_Mode           : BOOL;
+	Wait_For_Read       : BOOL;
+	Enable_Write        : BOOL;
+	Prev_Color          : BYTE;
+	StopWriteCmd        : BOOL;
+	StopRunLightModeCmd : BOOL;
+	StopSegmentModeCmd  : BOOL;
+	Write_Color         : BOOL;
+	ModeSelectMsgCycle  : um_Cycle;
+	CycleTON            : ARRAY[0..9] OF TON;
+	CycleTOF            : ARRAY[0..9] OF TOF;
+	StartedModeMsg      : BOOL;
+	ModeMsgExecuted     : BOOL;
+	Enable_Read_Mode    : BOOL;
+	ColorSelectMsgCycle : um_Cycle;
+	ColorMsgExecuted    : BOOL;
+	TON_0               : TON;
+	//Bit_Distribute_FB   : COP_Dynamic_BYTE;
+	Color               : BYTE;
+	ReadColor           : BYTE;
+	StartColorMsg       : BOOL;
+	StartedColorMsg     : BOOL;
+	StartMsg            : BOOL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Mode Selsection
+(*
+IF LightData.OperatorLight THEN
+    OpLightMode :=TRUE;
+END_IF
+
+GateLightMode  := LightData.GateLight;
+All_PP_OK      := LightData.Station_Enabled AND LightData.Station_Reset AND LightData.All_PP;
+PartMissing    := LightData.Station_Enabled AND LightData.Station_Reset AND NOT LightData.All_PP AND LightData.No_PP;
+OpClearToEnter := LightData.Station_At_Load AND LightData.Station_Enabled AND (LightData.Station_Reset OR LightData.Ready_For_Unload);
+RejectPart     := LightData.Station_Enabled AND LightData.RejectPart;
+MachineInActive:= LightData.MachineNotRunning;
+
+//Mapping to Light Color for Operator
+White          := All_PP_OK OR PartMissing;
+Red            := RejectPart;
+Green          := OpClearToEnter;
+Blue           := MachineActive;
+Yellow         := MachineActive;
+Flash          := PartMissing OR RejectPart OR PartNotRemoved;
+
+//Mapping to Light Color For Gates
+//Gate Lights
+//Condition for Gate Open
+GateOpen := NOT LightData.MaintMode AND LightData.GateUnlocked;
+RTE_Req  := LightData.Req_To_Enter_Requested AND LightData.GateLocked AND NOT LightData.Req_To_Enter_OK;
+RTE_OK   := LightData.GateLocked AND LightData.Req_To_Enter_OK;
+Gates_OK := LightData.AllGatesReset AND LightData.GateLocked AND NOT LightData.MaintMode;
+MaintModeActive := LightData.MaintMode AND (LightData.GateUnlocked OR RTE_OK); 
+
+White    := MaintModeActive;
+Red      := GateOpen;
+Green    := Gates_OK;
+Blue     :=(RTE_OK AND NOT LightData.MaintMode) OR RTE_Req;
+Flash    := RTE_Req AND NOT RTE_OK;
+
+//Mapping to Outputs
+//IF NOT  (Green,Red,Yellow,Blue,Orange,Purple,White) THEN
+//    Mapped_SmartLight[0,1,2] := FALSE  ;
+//END_IF
+
+IF Green THEN
+    Mapped_SmartLight[0] :=TRUE;
+    Mapped_SmartLight[1,2] :=FALSE;
+END_IF
+
+IF Red THEN
+    Mapped_SmartLight[1] :=TRUE;
+    Mapped_SmartLight[0,2] :=FALSE;
+END_IF
+
+IF Yellow THEN
+    Mapped_SmartLight[0,1] :=TRUE;
+    Mapped_SmartLight[2] :=FALSE;
+END_IF
+
+IF Blue THEN
+    Mapped_SmartLight[2] :=TRUE;
+    Mapped_SmartLight[0,1] :=FALSE;
+END_IF
+
+IF Orange THEN
+    Mapped_SmartLight[0,2] :=TRUE;
+    Mapped_SmartLight[1] :=FALSE;
+END_IF
+
+IF Purple THEN
+    Mapped_SmartLight[0,1] :=TRUE;
+    Mapped_SmartLight[2] :=FALSE;
+END_IF
+
+IF White THEN
+    Mapped_SmartLight[0,1,2] :=TRUE;
+END_IF
+
+IF Flash THEN
+    Mapped_SmartLight[3] :=TRUE;
+END_IF
+
+*)
+
+
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

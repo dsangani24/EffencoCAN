@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="MainSequencer" Id="{f7cc08ca-aef1-42fe-82b2-6a0a82031afa}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK MainSequencer
+VAR_INPUT
+	Status	: REFERENCE TO ST_MainSequencerStatus;
+END_VAR
+VAR
+	fbTest1Sequencer	: Test1Sequencer;	
+	oPowerPackChargeRequest	 AT%Q* : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[_M_Test1();
+//_M_AutoSequence();]]></ST>
+    </Implementation>
+    <Folder Name="Sequence" Id="{3289d9b3-554a-4787-becd-9cfb417dba89}" />
+    <Method Name="_M_AutoSequence" Id="{6cf6cd8d-2e8d-40e2-9a9b-6aba675c9118}" FolderPath="Sequence\">
+      <Declaration><![CDATA[METHOD PRIVATE _M_AutoSequence
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTest1Sequencer.M_AutoSequence(AutoSteps := E_Test1AutoSteps.PRESSURIZEHYDRAULICMOTOR);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_M_Test1" Id="{691a04b7-d6d0-4750-8ccd-7dc021f473b3}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_Test1
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbTest1Sequencer();]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

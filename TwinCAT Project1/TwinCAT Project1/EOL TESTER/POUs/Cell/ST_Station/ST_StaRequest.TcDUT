@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_StaRequest" Id="{7104d51e-bfde-4984-b2fb-ca98e62e8cda}">
+    <Declaration><![CDATA[TYPE ST_StaRequest :
+STRUCT
+    AutoInitiate        : BIT; // 
+    AutoConfirm         : BIT; // 
+    FaultReset          : BIT; // 
+    Hold                : BIT; // 
+    LampTest            : BIT; // 
+    PauseMSG            : BIT; // 
+    DryCycle            : BIT; // 
+    AllProcessOn        : BIT; // 
+    AllProcessOff       : BIT; // 
+    ProdCountReset      : BIT; //   
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

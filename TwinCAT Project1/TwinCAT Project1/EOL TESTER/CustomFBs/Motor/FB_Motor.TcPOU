@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Motor" Id="{c08072a6-9fc5-48e0-8482-89c4449e57dd}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Motor
+VAR_INPUT
+   SafetyOk               : BOOL;
+END_VAR
+VAR 
+    stMotor               : ST_Motor;
+    stMotorInputs         : ST_MotorInputs;
+    Error                 : ST_Error (Priority := 999);
+    Status                : ST_MotorStatus;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+(* Monitoring all Digital Inputs during Process *)
+M_Monitor();
+
+(* HPU - Faults *)
+M_Fault();]]></ST>
+    </Implementation>
+    <Folder Name="Structure" Id="{c84e9ff1-48e3-4739-b391-b8516d67547e}" />
+    <Method Name="M_Fault" Id="{357f36e9-09ed-4dce-abfd-0ad99cf3588c}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Fault : BOOL
+VAR_INST
+    (*Fault Timers*)
+    System_Faults       : ARRAY [0..10] OF BOOL;
+	Fault_Tmrs          : ARRAY [0..10] OF TON;
+END_VAR
+VAR
+    Error : ST_Error;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ Error.Active := stMotorInputs.Overload;
+ Error.Message := 'Motor Overload Tripped';
+ M_RaiseError(InputError := Error);
+
+
+
+   (*Fault1 - HPU Enable input not coming on: check relay in MCP Panel*)
+		Fault_Tmrs[1].PT:= T#2.5S;
+		Fault_Tmrs[1]();
+		Fault_Tmrs[1].IN:=  GVL.zz_Deep.0 AND //need to add safety EDM condition 
+							  stMotorInputs.Enable ;
+        System_Faults[1]:= Fault_Tmrs[1].Q;
+        
+    (*Fault2 - HPU Running Input is not coming ON *)
+		Fault_Tmrs[2].PT:= T#2.5S;
+		Fault_Tmrs[2]();
+		Fault_Tmrs[2].IN:= stMotor.Start AND
+                              stMotorInputs.Running; 
+        System_Faults[2]:= Fault_Tmrs[2].Q;    
+        
+    (*Fault3 - HPU Motor OverLoad Trip: CheckUnit *)
+		Fault_Tmrs[3].PT:= T#0.5S;
+		Fault_Tmrs[3]();
+		Fault_Tmrs[3].IN:= stMotorInputs.Overload;  
+        System_Faults[3]:= Fault_Tmrs[].Q;  
+        
+   (*Fault4 - Low Critical Oil: Motor can not run until Tank is Filled *)
+		Fault_Tmrs[].PT:= T#0.5S;
+		Fault_Tmrs[]();
+		Fault_Tmrs[].IN:= ;  
+        System_Faults[]:= Fault_Tmrs[].Q;
+        
+   (*Fault5 - Oil Temperature Critical: Motor Can not run until Oil Cools Down *)
+		Fault_Tmrs[].PT:= T#0.5S;
+		Fault_Tmrs[]();
+		Fault_Tmrs[].IN:=   
+        System_Faults[]:= Fault_Tmrs[].Q;
+        
+    (*Fault6 - HPU High Pressure Bypass Valve Faulted - not going to Low Pressure: Major Fault *)
+		Fault_Tmrs[].PT:= T#12.5S;
+		Fault_Tmrs[]();
+		Fault_Tmrs[].IN:=  
+        System_Faults[]:= Fault_Tmrs[].Q; ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Monitor" Id="{ced2b0bb-3f09-4194-bf36-05eb42aa59a3}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Monitor : BOOL
+VAR   
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+//Do we still need to monitor even if we are monitoring in faults
+
+//IF stMotor.Start  THEN    //Should I add more condition from safety related to CH-1 and CH-2
+//     stMotorInputs.Running AND stMotorInputs.Enable AND NOT stMotorInputs.Overoload
+  
+//END_IF
+
+
+//Do we need to monitro safety input here as well? 
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_RaiseError" Id="{b96233f7-c151-4b6f-9fe2-04f73f031e86}">
+      <Declaration><![CDATA[METHOD PRIVATE M_RaiseError
+VAR_INPUT
+    InputError : ST_Error;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF InputError.Priority < Error.Priority THEN
+    Error := InputError;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ResetFault" Id="{047da150-41f1-4591-a405-1ced91ae0035}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ResetFault
+VAR
+    NullError : ST_Error;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Error := NullError;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Start" Id="{bd2460d8-85f3-4487-89f8-fbf1a0b45c63}">
+      <Declaration><![CDATA[METHOD M_Start : BOOL
+VAR
+
+    SafetyNOKError : ST_Error (Message := 'Motor Not Started Fault Due To Safety NOK', Priority := 1); 
+    
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ //Verify Motor Safety
+ 
+(*IF  SafetyOk  AND                                 //tHIS CONDITION WILL MONITOR BEFORE RUN MOTOR PROGRAM    
+         NOT stMotorInputs.Overload AND            //OL Relay Tripped Input
+         NOT M_Fault(); THEN                    //Need to verify this logic
+    stMotor.Start_Safeties := TRUE;
+ELSE
+    stMotor.Start_Safeties := FALSE;
+END_IF*)          
+         
+IF (stStation.Mode.Auto OR    
+         (stStation.Mode.Manual AND 
+            stMotor.Manual_Start_PB)) AND 
+                stMotor.Start_Safeties THEN
+    stMotor.Start := TRUE;
+    stmotor.Motortimedelay (IN := TRUE);   
+ELSE
+     
+
+IF SafetyOk THEN
+    stMotor.Start := TRUE;
+ELSE    
+    stMotor.Start := FALSE;
+    SafetyNOKError.Active := TRUE;
+    M_RaiseError(InputError := SafetyNOKError);
+END_IF
+       ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stop" Id="{992e604c-78b9-4640-aa95-ae42296b2986}">
+      <Declaration><![CDATA[METHOD M_Stop : BOOL
+VAR_INST
+    
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ //Verify Motor Safety
+ 
+IF  fbCell.M_Power() AND fbCell.M_Utility() AND 
+         GVL.zz_Deep  AND                          //safety needs to add    
+         NOT stHPU_Input AND                      //OL Relay Tripped Input
+         NOT M_Fault(); THEN                      //Need to verify this logic
+    stMotor.Start_Safeties := TRUE;
+ELSE
+    stMotor.Start_Safeties := FALSE;
+END_IF         
+         
+IF (stStation.Mode.Auto OR    
+         (stStation.Mode.Manual AND 
+            stMotor.Manual_Stop_PB)) AND 
+                stMotor.Start_Safeties THEN
+    stMotor.Stop := TRUE;
+    stMotor.MotortimeOFFdelay (IN := TRUE);   
+ELSE
+
+IF stMotor.Stop AND stmotor.MotortimeOFFdelay.Q AND NOT stMotor.Motortimedelay.Q   THEN
+     //time out happended - indicate fault
+     //reset outout for coil
+     //monitor safety
+END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Status" Id="{fa2bfa83-8493-4816-a7a4-af0c21e16e24}">
+      <Declaration><![CDATA[PROPERTY P_Status : ST_MotorStatus]]></Declaration>
+      <Get Name="Get" Id="{e6ec123e-ca76-40a3-953e-f5fb21f6bb13}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Status := Status;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Gates" Id="{ada49c0b-c6aa-4f91-8d66-6c508f294c5c}">
+    <Declaration><![CDATA[TYPE ST_Gates :
+STRUCT
+    //Gate Box
+    Request_To_Enter             : BOOL;                  //Request to Enter
+    Reset                        : ARRAY [1..5] OF BOOL;  //Reset Door
+    Resume_ONS                   : R_TRIG;                //Resume(One Shot)
+    OK_To_Enter                  : BOOL;                  //Ok to Enter (Station)
+    EntryGranted                 : BOOL;                  //Granted (Unlock Doors)
+    EStop_Mem                    : BOOL;
+    Closed                       : BOOL;
+    Teach_Mode_OK                : BOOL; 
+    
+    //Gate SAFTY OUTPUT
+    DoorUnlockRequest            : ARRAY [1..5] OF BOOL; //Door Unlock Request
+    DoorOktoUnlock               : ARRAY [1..5] OF BOOL; //Door Ok to Unlcok
+    ReqtoEnterInput_LT  AT%Q*    : ARRAY [1..5] OF BOOL; //WHITE Light  Requst to Enter (Input)     
+    FaultResetInput_LT  AT%Q*    : ARRAY [1..5] OF BOOL; //RED Light    Door Fault Reset
+    PowerOn_LT          AT%Q*    : ARRAY [1..5] OF BOOL; //GREEN Light  Door Power ON/Cycle start Input
+    
+    //Gate SAFETY INPUT
+    Run_Mode                                    : BIT;//SI_RM
+	Connection_Fauled                           : BIT;//SI_CF
+	Diagnostic_Active                           : BIT;//SI_DA
+	FailSafe_Input_EStop_OK                     : BIT;//SI_FIES
+	FailSafe_Input_DoorPosition                 : BIT;//SI_FI_D
+	FailSafe_Input_BoltPosition                 : BIT;//SI_FI_B
+	FailSafe_Input_GuardLocking                 : BIT;//SI_FI_L (GATE LOCKED)
+	FailSafe_Input_DoorAndBolt_Position         : BIT;//SI_FI_SK
+	FailSafe_Input_DoorBoltAndGuardLocking      : BIT;//SI_FI_UK
+	Maintenance_Mode                            : BIT;//SI_S94
+    DoorReqtoEnterInput AT%I*                   : ARRAY [1..5] OF BOOL; //SI_S2//WHITE PB  Requst to Enter (Input)     
+    DoorFaultResetInput AT%I*                   : ARRAY [1..5] OF BOOL; //SI_S3//RED PB    Door Fault Reset
+    DoorPowerOn         AT%I*                   : ARRAY [1..5] OF BOOL; //SI_S4//GREEN PB  Door Power ON/Cycle start Input
+	Diagnostics_Plausibility_Fault              : BIT;//SI_D_PF
+	Diagnostics_Emergency_Stop                  : BIT;//SI_D_ES
+	Diagnostics_GuardLocking                    : BIT;//SI_D_OL
+	Diagnostics_Lifetime                        : BIT;//SI_D_LT
+
+    
+END_STRUCT                          
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

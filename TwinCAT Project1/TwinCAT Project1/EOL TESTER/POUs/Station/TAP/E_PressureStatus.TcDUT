@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_PressureStatus" Id="{ced11f52-a12d-4521-be0c-f1c6cd871b1b}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'to_string'}
+TYPE E_PressureStatus : 
+(
+    FillingupTestFail    := 10,
+    FillingupTestPass    := 20,
+    PressuretestOk       := 30,
+    Pressuretestfail     := 40,
+    InletLeakDetect      := 50,
+    OilLeakDetect        := 60
+    	
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

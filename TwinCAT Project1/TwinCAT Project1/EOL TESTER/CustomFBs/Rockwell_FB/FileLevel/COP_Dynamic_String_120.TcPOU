@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="COP_Dynamic_String_120" Id="{f5f9a892-22fd-4d1b-b6d5-a465d706965a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK COP_Dynamic_String_120
+VAR_IN_OUT
+	Source: ARRAY[*] OF STRING(120);
+	Dest: ARRAY[*] OF STRING(120);
+END_VAR
+VAR_INPUT
+	SStart: DINT;
+	DStart: DINT;
+	Length: BYTE;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	i: BYTE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR i := 0 TO Length DO
+	Dest[i+DStart]:= Source[i+SStart];
+END_FOR]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

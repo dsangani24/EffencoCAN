@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_SenorStatus" Id="{caa62083-cc28-4c0e-931c-c44bce60c0e5}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_SenorStatus :
+(
+	enum_member         := 0,
+    P1UUTSensorOK       := 10,
+    P1UUTSensorFail     := 20,
+    P2UUTSensorOK       := 30,
+    P2UUTSensorFail     := 40,
+    Filterisdetected    := 50,
+    Filterismissing     := 60
+    
+    
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

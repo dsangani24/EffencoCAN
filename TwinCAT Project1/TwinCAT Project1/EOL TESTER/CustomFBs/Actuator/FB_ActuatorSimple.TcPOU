@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ActuatorSimple" Id="{53f84ca9-6c49-495d-af03-1e28c6573fb7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ActuatorSimple
+VAR_INPUT
+    stCell      : ST_Cell;
+    stStation   : ST_Station;
+END_VAR
+VAR
+	stStatus			: ST_Actuatorstatus;
+	stConfiguration 	: ST_ActuatorConfig;
+	stInputs			: ST_ActuatorInputs;
+	stOutputs			: ST_ActuatorOutputs;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//_M_EvaluateInputs();
+_M_Status();]]></ST>
+    </Implementation>
+    <Method Name="_M_EvaluateInputs" Id="{fbc87503-a6b8-4e51-ac83-8c20211f5922}">
+      <Declaration><![CDATA[METHOD PRIVATE _M_EvaluateInputs
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_M_Status" Id="{43735129-00b7-44ac-8f90-0ff1f62ecfc3}">
+      <Declaration><![CDATA[METHOD PUBLIC _M_Status : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Reset Status
+//Status.AdvancedFeedback := FALSE;
+//Status.Advancing := FALSE;
+//Status.RetractedFeedback := FALSE;
+//Status.Retracting := FALSE;
+
+// Set According To Raw Value
+IF stInputs.Advanced AND NOT stInputs.Retracted THEN
+    stStatus.AdvancedFeedback := TRUE;
+    stConfiguration.AdvancedFeedbackTimeout(IN:=FALSE);
+    IF stOutputs.Advance THEN
+        stOutputs.Advance := FALSE;
+    END_IF
+ELSE
+    IF stOutputs.Advance THEN
+        stStatus.Advancing := TRUE;
+    END_IF
+END_IF	
+
+IF stInputs.Retracted AND stInputs.Advanced THEN 	
+    stStatus.RetractedFeedback := TRUE;
+    IF stOutputs.Retract THEN
+        stOutputs.Retract := FALSE;
+    END_IF
+ELSE
+    IF stOutputs.Retract THEN
+        stStatus.Retracting := TRUE;
+    END_IF
+END_IF
+
+IF stInputs.Advanced AND stInputs.Retracted THEN
+    //error handling
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Advance" Id="{6398a548-95d5-4425-b6c2-9b80e6906d82}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Advance
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//At Advance Position
+
+IF stStatus.RetractedFeedback AND NOT stStatus.AdvancedFeedback THEN      
+      stOutputs.Retract := FALSE;
+      stOutputs.Advance := TRUE;
+      stConfiguration.AdvancedFeedbackTimeout(IN:=TRUE);
+END_IF      
+IF NOT stStatus.AdvancedFeedback AND stConfiguration.AdvancedFeedbackTimeout.Q THEN
+    //time out happened - indicate fault
+    //reset output for advance and retract
+    //monitor safety
+END_IF
+      ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Retract" Id="{d3922485-70c2-436a-b059-0a99274bb7ba}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Retract
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//At Retract Position
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_Config" Id="{8b923a30-7258-4d78-9ada-ae37089d8c9c}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_Config : REFERENCE TO ST_ActuatorConfig]]></Declaration>
+      <Get Name="Get" Id="{0e43f2a6-c51a-4c91-afbc-ef610637f457}">
+        <Declaration><![CDATA[PUBLIC 
+VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Config REF= stConfiguration;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_Status" Id="{6e6ac524-3a9e-4759-afac-7bbe194aac41}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_Status : REFERENCE TO ST_Actuatorstatus]]></Declaration>
+      <Get Name="Get" Id="{cef62915-32f3-475d-ae28-71d0b8ddc6f7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_Status REF= stStatus;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+  </POU>
+</TcPlcObject>

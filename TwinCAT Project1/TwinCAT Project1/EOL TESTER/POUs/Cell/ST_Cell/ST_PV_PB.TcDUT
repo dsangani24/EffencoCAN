@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_PV_PB" Id="{7346e7d4-dbbe-4bda-b755-5587b967339c}">
+    <Declaration><![CDATA[TYPE ST_PV_PB :
+STRUCT
+	FaultReset_PB 		:BOOL;  //FAULT_RESET PV_PB
+	AutoManual_SS 		:BOOL; 	//AUTO/MANUAL SELECTOR SWITCH PV PB
+	AutoSelector_PB 	:BOOL; 	//AUTO_SELECTOR SWITCH PV PB
+	ManualSelector_PB 	:BOOL; 	//MANUAL_SELECTOR SWITCH PV PB
+	AutoMode_PB		:BOOL; 	//AUTO MODE PV PB
+	Dry_Cycle_Mode		:BOOL;	//DRY_CYCLE_MODE PV PB
+	ContinousRun_Mode	:BOOL;	//CONTINUOUS RUN MODE PV PB
+	FaultHistory_Reset	:BOOL;	//FAULT HISTOTY RESET PV PB
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

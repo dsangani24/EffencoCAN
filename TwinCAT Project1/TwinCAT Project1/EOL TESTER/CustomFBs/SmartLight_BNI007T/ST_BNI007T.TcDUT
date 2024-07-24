@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_BNI007T" Id="{2e06e909-deb0-4efe-ab52-3105d7d991b8}">
+    <Declaration><![CDATA[TYPE ST_BNI007T :
+STRUCT
+  	LC_Ok                   : BOOL; 
+	RejectPart              : BOOL;   
+	InCycle                 : BOOL;	       
+	Req_To_Enter_OK         : BOOL;   
+	Req_To_Enter_Requested  : BOOL; 
+	All_PP                  : BOOL;       
+	No_PP                   : BOOL;
+	MaintMode               : BOOL;       
+	GateLight               : BOOL;
+	OperatorLight           : BOOL;
+	Station_Enabled         : BOOL;
+	Station_Reset           : BOOL;
+	Station_At_Load         : BOOL;
+	Ready_For_Unload        : BOOL;
+	PP_Not_On_Fault         : BOOL;
+	PP_Not_Off_Fault        : BOOL;	
+	MachineNotRunning       : BOOL;
+	GateLocked              : BOOL;
+	GateUnlocked            : BOOL;
+	AllGatesReset           : BOOL;  
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

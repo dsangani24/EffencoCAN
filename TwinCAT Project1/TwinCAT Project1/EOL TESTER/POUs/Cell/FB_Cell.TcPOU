@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Cell" Id="{b3893eaa-1b81-4a2f-8eae-9221ac960d8c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Cell
+VAR
+	fbMainAirDump			  : FB_ActuatorSimple;
+    stGate1                   : ST_Gates;
+    stGate2                   : ST_Gates;
+    fbOp_Smartlight           : FB_BNI007T;
+    fbGate1_SmartLight        : FB_BNI007T;
+	fbGate2_SmartLight        : FB_BNI007T;
+    fbStation_TAP             : FB_TAP;
+    stCell	                  : ST_Cell;       //Cell Level 
+    stStation                 : ST_Station;   //Station Level
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[M_Utilities();
+M_Power();
+M_Modes();
+M_Status();
+M_AllGateEntry();
+M_GateBox();
+M_IndicatorLights();
+
+
+]]></ST>
+    </Implementation>
+    <Method Name="M_AllGateEntry" Id="{5e794dae-9b22-418a-bbd2-7b5361b6fb10}">
+      <Declaration><![CDATA[METHOD PUBLIC M_AllGateEntry
+VAR_INST
+    Request_Timeout_TMR       : TON; //Request to Enter Timeout Timer
+    Request_Timeout_TmrDN     : BOOL; //Request to enter timer is Done
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Cell Gate Entry - Control Section
+
+//Request to Enter
+IF GVL.stCell.Gates.DoorReqtoEnterInput[1] OR GVL.stCell.Gates.DoorReqtoEnterInput[2] THEN
+    GVL.stCell.Gates.Request_To_Enter := TRUE;
+        ELSIF   GVL.stCell.Gates.DoorPowerOn[1] OR GVL.stCell.Gates.DoorPowerOn[2] THEN
+    GVL.stCell.Gates.Request_To_Enter := FALSE; 
+END_IF
+
+//Ok to Enter - All stations and Testing Unit
+GVL.stCell.Gates.OK_To_Enter := GVL.stCell.Gates.Request_To_Enter AND GVL.zz_Deep.1;       //Need to add in standard code (After getting each station information)
+
+//Gate entry Granted - Unlock all Gates
+Request_Timeout_TMR (IN := GVL.stCell.Gates.Request_To_Enter AND NOT GVL.stCell.Gates.EntryGranted, PT := T#45S, Q => Request_Timeout_TmrDN ); 
+
+GVL.stCell.Gates.EntryGranted := GVL.stCell.Gates.Request_To_Enter AND 
+                                        (GVL.stCell.Gates.OK_To_Enter OR 
+                                                GVL.stCell.Gates.EntryGranted OR 
+                                                            Request_Timeout_TmrDN) ;
+                                                            
+                                   
+
+                        
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DisplayFaults" Id="{f7f359a2-6208-436a-bcf2-df8677767cc8}">
+      <Declaration><![CDATA[METHOD M_DisplayFaults : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_DisplayMessages" Id="{0f39beea-912f-4e38-a659-e048ab759daf}">
+      <Declaration><![CDATA[METHOD M_DisplayMessages : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Faulthistory" Id="{6707480a-902e-43fe-aeb0-d9c7349bf37d}">
+      <Declaration><![CDATA[METHOD M_Faulthistory : BOOL
+VAR_INPUT
+    COP_Dynamic_String_120_0: COP_Dynamic_String_120;
+    COP_Dynamic_String_120_1: COP_Dynamic_String_120;
+	COP_Dynamic_String_120_2: COP_Dynamic_String_120;
+	COP_Dynamic_String_120_3: COP_Dynamic_String_120;
+	COP_Dynamic_String_120_4: COP_Dynamic_String_120;
+	COP_Dynamic_String_120_5: COP_Dynamic_String_120;
+    COP_Dynamic_String_15_0: COP_Dynamic_String_15;
+    COP_Dynamic_String_15_1: COP_Dynamic_String_15;
+	COP_Dynamic_String_15_2: COP_Dynamic_String_15;
+	COP_Dynamic_String_15_3: COP_Dynamic_String_15;
+	COP_Dynamic_String_15_4: COP_Dynamic_String_15;
+	COP_Dynamic_String_15_5: COP_Dynamic_String_15;
+	FLT_CNT: BYTE := 0;
+    Len: BYTE;
+    DStart_Pos: DINT;
+    Pointr: BYTE;
+	History_Temp: ARRAY [0..49] OF STRING(120);
+	History_Time_Temp: Array [0..49] of string(15);
+	History_Buffer_Temp: Array [0..49] of string(120);
+	History_Time_Buffer_Temp: Array [0..49] of string(15);
+	FLL1_String_120_0: FLL1_String_120;
+	FLL1_String_120_1: FLL1_String_120;
+	FLL1_String_15_0: FLL1_String_15;
+	FLL1_String_15_1: FLL1_String_15;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FLT_CNT>49 THEN
+	FLT_CNT:=49;
+END_IF
+
+//Initialize Lengths
+Len:=49-FLT_CNT;
+DStart_Pos:=FLT_CNT;
+(*
+IF Cell_HMI1.Req.FaultReset=TRUE AND FLT_CNT>0 THEN
+	
+	//Index Old Fault
+	COP_Dynamic_String_120_0(Source:=Cell_HMI1.Fault.History, Dest:=History_Temp, SStart:=0, DStart:=0, Length:= Len);
+	COP_Dynamic_String_120_1(Source:=History_Temp, Dest:=Cell_HMI1.Fault.History, SStart:=0, DStart:=DStart_Pos, Length:= Len);
+	
+	//Index Old Time
+	COP_Dynamic_String_15_0(Source:=Cell_HMI1.Fault.History_Time, Dest:=History_Time_Temp, SStart:=0, DStart:=0, Length:= Len);
+	COP_Dynamic_String_15_1(Source:=History_Time_Temp, Dest:=Cell_HMI1.Fault.History_Time, SStart:=0, DStart:=DStart_Pos, Length:= Len);
+	
+	// Copy New Faults
+	COP_Dynamic_String_120_2(Source:=Cell_HMI1.Fault.History_Buffer, Dest:=Cell_HMI1.Fault.History, SStart:=0, DStart:=0, Length:= FLT_CNT-1);
+	
+	// Copy New Time
+	COP_Dynamic_String_15_2(Source:=Cell_HMI1.Fault.History_Time_Buffer, Dest:=Cell_HMI1.Fault.History_Time, SStart:=0, DStart:=0, Length:= FLT_CNT-1);
+	
+	//Clear All Data
+	FLL1_String_120_0(Dest:=Cell_HMI1.Fault.History_Buffer , Source:= '', Start:= 0, Length:=49 );
+	FLL1_String_120_1(Dest:=History_Buffer_Temp , Source:= '', Start:= 0, Length:=49 );
+	FLL1_String_15_0(Dest:=Cell_HMI1.Fault.History_Time_Buffer , Source:= '', Start:= 0, Length:=49 );
+	FLL1_String_15_1(Dest:=History_Time_Buffer_Temp , Source:= '', Start:= 0, Length:=49 );
+	
+	//Reset Fault Count
+	FLT_CNT:=0;
+	
+END_IF
+
+IF Cell_HMI1.Fault.Display<>'' THEN
+IF FLT_CNT<=49 THEN			
+				Pointr:=0;
+				WHILE Pointr<=49 DO
+					IF Cell_HMI1.Fault.History_Buffer[Pointr]=Cell_HMI1.Fault.Display THEN
+					   Cell_HMI1.Fault.History_Time_Buffer[Pointr]:=Cell_HMI1.Fault.Current_Time;
+					   JMP END;
+					END_IF
+					Pointr:=Pointr+1;
+				END_WHILE
+				
+     		    //Index Fault Buffer
+                COP_Dynamic_String_120_3(Source:=Cell_HMI1.Fault.History_Buffer, Dest:=History_Buffer_Temp, SStart:=0, DStart:=1, Length:= 48);
+ 				COP_Dynamic_String_120_4(Source:=History_Buffer_Temp, Dest:=Cell_HMI1.Fault.History_Buffer, SStart:=1, DStart:=1, Length:= 48);
+				
+				//Index Time Buffer
+				COP_Dynamic_String_15_3(Source:=Cell_HMI1.Fault.History_Time_Buffer, Dest:=History_Time_Buffer_Temp, SStart:=0, DStart:=1, Length:= 48);
+				COP_Dynamic_String_15_4(Source:=History_Time_Buffer_Temp, Dest:=Cell_HMI1.Fault.History_Time_Buffer, SStart:=1, DStart:=1, Length:= 48);
+				
+				//Copy Fault and Time To the First Buffer Position				
+				Cell_HMI1.Fault.History_Buffer[0]:=Cell_HMI1.Fault.Display;
+				Cell_HMI1.Fault.History_Time_Buffer[0]:=Cell_HMI1.Fault.Current_Time;
+				FLT_CNT:=FLT_CNT+1;
+END_IF						
+END_IF
+*)
+//End:]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GateBox" Id="{0f5a9381-f496-4175-abde-07aa2f9bc8f2}">
+      <Declaration><![CDATA[METHOD PRIVATE M_GateBox
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//GateBox-1 Lock Solenoid
+(*
+IF GVL.Cell.Gates.DoorReqtoEnterInput[1] AND GVL.Cell.Gates.Request_To_Enter THEN
+    GVL.Cell.Gates.DoorUnlockRequest[1] := TRUE;
+ELSIF GVL.Cell.Gates.DoorPowerOn[1] AND  GVL.zz_Deep.0 AND GVL.zz_Deep.0 THEN
+    GVL.Cell.Gates.DoorUnlockRequest[1] := FALSE;
+END_IF
+
+GVL.Cell.Gates.DoorOktoUnlock[1] := (GVL.Cell.Gates.EntryGranted OR 
+                                          GVL.Cell.Gates.DoorOktoUnlock[1] OR 
+                                          GVL.zz_Deep.0)  AND 
+                                          GVL.Cell.Gates.DoorUnlockRequest[1];
+                                         
+//GateBox-1 - Smart light Mapping
+//White Light
+GVL.Cell.Gates.ReqtoEnterInput_LT[1] :=  GVL.Cell.Gates.DoorUnlockRequest[1] AND 
+                                            GVL.Cell.Gates.Request_To_Enter AND 
+                                            GVL.Cell.Gates.OK_To_Enter AND 
+                                            GVL.Cell.Gates.EntryGranted AND 
+                                            (NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK));  
+
+//Green Liight
+
+GVL.Cell.Gates.FaultResetInput_LT[1] :=  (Gate1.Reset OR (Gate1.closed AND NOT Gate1.Reset AND Gate1.Maintenance_Mode) AND 
+                                            (NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK)))  OR
+                                            (Gate1.Maintenance_Mode AND NOT Gate1.Teach_Mode_OK);                                         
+                                            
+//Red Light
+GVL.Cell.Gates.FaultResetInput_LT[1] :=  (GVL.Cell.Status.All_Faults AND 
+                                            ( NOT Gate1.Maintenance_Mode OR (Gate1.Maintenance_Mode AND Gate1.Teach_Mode_OK))) OR
+                                            Gate1.DoorFaultResetInput[1]   OR
+                                            (Gate1.Maintenance_Mode AND NOT Gate1.Teach_Mode_OK);
+                                            
+
+                                            
+                                            
+                                            
+                                            
+//GateBox-2 Lock Solenoid
+IF GVL.Cell.Gates.DoorReqtoEnterInput[2] AND GVL.Cell.Gates.Request_To_Enter THEN
+    GVL.Cell.Gates.DoorUnlockRequest[2] := TRUE;
+ELSIF GVL.Cell.Gates.DoorPowerOn[1] AND  GVL.zz_Deep.0 AND GVL.zz_Deep.0 THEN
+    GVL.Cell.Gates.DoorUnlockRequest[2] := FALSE;
+END_IF
+
+GVL.Cell.Gates.DoorOktoUnlock[2] := (GVL.Cell.Gates.EntryGranted OR 
+                                          GVL.Cell.Gates.DoorOktoUnlock[2] OR 
+                                          GVL.zz_Deep.0)  AND 
+                                          GVL.Cell.Gates.DoorUnlockRequest[2];
+
+//GateBox-2 - Smart light Mapping
+//White Light
+GVL.Cell.Gates.ReqtoEnterInput_LT[2] :=  GVL.Cell.Gates.DoorUnlockRequest[2] AND 
+                                            GVL.Cell.Gates.Request_To_Enter AND 
+                                            GVL.Cell.Gates.OK_To_Enter AND 
+                                            GVL.Cell.Gates.EntryGranted AND 
+                                            (NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK));  
+
+//Green Liight
+GVL.Cell.Gates.FaultResetInput_LT[2] :=  (Gate2.Reset OR (Gate2.closed AND NOT Gate2.Reset AND Gate2.Maintenance_Mode) AND 
+                                            (NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK)))  OR
+                                            (Gate2.Maintenance_Mode AND NOT Gate2.Teach_Mode_OK);
+                                            
+                                            
+//Red Light
+GVL.Cell.Gates.FaultResetInput_LT[2] :=  (GVL.Cell.Status.All_Faults AND 
+                                            ( NOT Gate2.Maintenance_Mode OR (Gate2.Maintenance_Mode AND Gate2.Teach_Mode_OK))) OR
+                                            Gate2.DoorFaultResetInput   OR
+                                            (Gate2.Maintenance_Mode AND NOT Gate2.Teach_Mode_OK) ;                                          
+                                            *)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_IndicatorLights" Id="{ecb5db3a-057b-49a0-ad74-eb8da5674bf8}">
+      <Declaration><![CDATA[METHOD M_IndicatorLights
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MessageHistroy" Id="{59ba82f5-c105-4cad-9a1c-11ede72f3d96}">
+      <Declaration><![CDATA[METHOD M_MessageHistroy : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Modes" Id="{4824975e-af41-40d3-b144-6c9c79a29528}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Modes
+VAR_INST
+    PowerdownTmr    : TON;  //Auto Power off After 1 Hour of sitting idle
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Cell Modes - Control Section
+
+//Auto-Manual Mode Sleector Switch
+GVL.stCell.stMode.AutoSelect_Toggle.Toggle  := GVL.stCell.PV_PB.AutoManual_SS;
+                                          
+IF (GVL.stCell.stMode.AutoSelect_Toggle.Toggle AND NOT GVL.stCell.stMode.AutoSelect_Toggle.On ) OR 
+     (NOT GVL.stCell.stMode.AutoSelect_Toggle.Toggle AND GVL.stCell.stMode.AutoSelect_Toggle.On ) THEN
+          GVL.stCell.stMode.AutoSelect_Toggle.On :=TRUE;
+          ELSE  
+          GVL.stCell.stMode.Manual :=TRUE;
+		  END_IF;   
+                                                                                                                                  
+GVL.stCell.stMode.Autoinitiate   :=GVL.stCell.PV_PB.AutoMode_PB;
+
+//GVL.Cell.Mode.Manual := NOT GVL.Cell.Mode.AutoSelect_Toggle.On; 
+//GVL.Cell.Mode.AutoSelect_Toggle.On := (GVL.Cell.Mode.AutoSelect_Toggle.Toggle AND NOT GVL.Cell.Mode.AutoSelect_Toggle.On ) OR (NOT GVL.Cell.Mode.AutoSelect_Toggle.Toggle AND GVL.Cell.Mode.AutoSelect_Toggle.On );
+                                           
+// Cell Automatic Run Mode
+GVL.zz_Deep.1 := TRUE;                      //Need to add in standard code
+ 
+//Auto Power off
+GVL.zz_Deep.1 := TRUE;                      //Need to add in standard code
+
+ ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Power" Id="{6525f5ac-f0cf-423b-a408-4894d05f81c4}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Power
+VAR_INST
+	CtrlPwrOnTmr : TON;      //Control Power ON Timer
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Cell Specific General Safeties
+(*
+GVL.Cell.Power.Gen_Safety := GVL.Cell.Power.PowerOn AND 
+								GVL.Cell.Power.GatesClosed AND 
+								GVL.Cell.Utility.MainAirOn AND 
+								GVL.Cell.Status.AllComms_OK;
+
+
+//Control Power ON
+CtrlPwrOnTmr (IN := GVL.Cell.Power.EStops , PT := T#125MS, Q => GVL.Cell.Power.PowerOn); 
+
+//No E-Stops Pressed
+GVL.zz_Deep.0 := TRUE;                   //Need to add once get safety code
+
+//AllZone Gates are closed
+GVL.zz_Deep.0 := TRUE;                  //Need to add once get safety code
+
+  
+
+
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ResetFault" Id="{97d728df-dcfa-4053-b49e-9ab8bc9f5f2f}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ResetFault
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbStation_TAP.M_ResetFault();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Status" Id="{c743f3b8-2ea5-4c94-9e8b-96adeec78197}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Status
+VAR_INST
+    FaultResetTmr : TON;
+    CommsOKTmr    : TON; // All Communication Modules OK Delay Off Timer
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Cell Status - Control Selection
+FaultResetTmr (IN := GVL.stCell.PV_PB.FaultReset_PB OR GVL.stCell.Gates.DoorFaultResetInput[1] OR GVL.stCell.Gates.DoorFaultResetInput[2] , PT := T#0.1S, Q => GVL.stCell.Status.Fault_Reset);                                                                                                                       
+
+// All Cell Level Comms OK
+CommsOKTmr (IN := GVL.stCell.Status.ENetComms_OK, PT := T#1S, Q => GVL.stCell.Status.AllComms_OK ); 
+
+//All Zone Level - EtherCAT Modules OK
+GVL.zz_Deep.1 := TRUE;                      //Need to add in standard code
+
+
+//Station Signals used in Zone Level
+//All Station -Fault Present
+
+GVL.stCell.Status.All_Faults := GVL.stCell.Status.Faulted OR GVL.stStation.Status.Faulted OR GVL.zz_Deep.1; 
+
+//All Station - Messages Present
+
+GVL.stCell.Status.Message    := GVL.stCell.Status.Message OR GVL.stStation.Status.Message OR GVL.zz_Deep.1;
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TAP" Id="{bb5fb1aa-933d-488a-82ce-2733d47b5931}">
+      <Declaration><![CDATA[METHOD PRIVATE M_TAP
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbStation_TAP(stCell := stCell);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Utilities" Id="{fb565e46-027d-4cc5-bea6-9ed3be30de75}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Utilities
+VAR_INST
+	AirOnTmr	: TON;
+	AirOffTmr	: TON;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[// Main Air Dump
+IF GVL.stCell.stPower.PowerOn THEN
+	fbMainAirDump.M_Advance();
+ELSE
+	fbMainAirDump.M_Retract();
+END_IF
+
+// Air Pressure OK
+AirOffTmr (IN := GVL.stCell.stUtility.MainAirPSI < 70, PT := T#2S);
+AirOnTmr (IN := GVL.stCell.stUtility.MainAirPSI >= 90 AND NOT AirOffTmr.Q, PT := T#1.5S, Q => GVL.stCell.stUtility.MainAirOn);	
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

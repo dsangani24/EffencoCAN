@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Cell" Id="{b1eefd6c-738b-4d13-a380-fcaa4f5e773c}">
+    <Declaration><![CDATA[TYPE ST_Cell :
+STRUCT
+	stMode	        : ST_CellMode;
+	stUtility	    : ST_Utility;
+	stPower	        : ST_Power;
+	Status	        : ST_Status;
+	PV_PB	        : ST_PV_PB;
+	EStop	        : ST_Estops;
+	OperatorLight   : ST_SmartLight;
+	Job_Selection   : ST_JobSelection;
+    Gates           : ST_Gates;
+    Faults          : ST_CellFaults;
+    Safety          : ST_Safety;
+    
+END_STRUCT
+END_TYPE
+ ]]></Declaration>
+  </DUT>
+</TcPlcObject>

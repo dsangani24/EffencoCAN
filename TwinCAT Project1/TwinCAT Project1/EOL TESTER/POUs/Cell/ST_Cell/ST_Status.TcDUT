@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Status" Id="{ea7d6c28-af24-4ddf-832f-4c198630871f}">
+    <Declaration><![CDATA[TYPE ST_Status :
+STRUCT
+AllComms_OK		:BOOL; //ALL COMMUNICATION MODULES OK
+ENetComms_OK    :BOOL; //All EtherCAT Comms Ok
+Faulted			:BOOL; //Fault(s) Present
+Fault_Reset		:BOOL; //Fault Reset
+All_Faults		:BOOL; //ANY STATION FAULTED
+All_in_Auto		:BOOL; //ALL_STATIONS IN AUTO MODE
+All_in_Manuals	:BOOL; //ALL_SATIONS_IN MANUAL MODE
+StationsHeld	:BOOL; //Station is Hold in between Test
+Held			:BOOL; //CELL HOLD BUTTON PRESSED
+Message			:BOOL; //Message(s) Present
+ProcessOn		:BOOL; //DUT (Device Under Test) is ON
+ProcessOff		:BOOL; //DUT (Device Under Test) is OFF
+OKToEnterGates	:BOOL; //Safe
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_StaMode" Id="{ca4dfa85-ecbd-4543-8acd-fc433cdd7be4}">
+    <Declaration><![CDATA[TYPE ST_StaMode :
+STRUCT
+    ManualReady             : BIT; //READY FOR MANUAL
+    Manual                  : BIT;//IN MANUAL MODE
+    AutoReady               : BIT; //READY FOR AUTO
+    Auto                    : BIT; //IN AUTO MODE
+    DryCycleReady           : BIT; // READY FOR DRYCYCLE
+    DryCycle                : BIT; //IN DRY CYCLE MODE (RUN EMPTY)
+    PartTest                : BIT; //WHITE RABBIT TEST MODE
+    AutoWarning             : TON; // AUTO WARNING TIMER
+    Job_Select_PB           : BIT;// JOB SELECT PUSHBUTTON
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

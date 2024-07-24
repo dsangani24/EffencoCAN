@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="E_Checkvalvereject" Id="{98fbf3a4-345c-4e23-a337-224819a5a35e}">
+    <Declaration><![CDATA[{attribute 'qualified_only'}
+{attribute 'strict'}
+TYPE E_Checkvalvereject :
+(
+	enum_member         := 0,
+    CheckvalveOk        := 10,
+    Checkvalvefailure   := 20
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

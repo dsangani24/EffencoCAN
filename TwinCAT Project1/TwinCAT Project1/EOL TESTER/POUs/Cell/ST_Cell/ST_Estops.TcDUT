@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Estops" Id="{0873daa4-90b2-44d0-b155-980a4c3e7049}">
+    <Declaration><![CDATA[TYPE ST_Estops :
+STRUCT
+Gate1:BIT; 
+Gate2:BIT; 
+Gate3:BIT; 
+Gate4:BIT; 
+Gate5:BIT; 
+Gate6:BIT; 
+Oper1:BIT; 
+Oper2:BIT; 
+Oper3:BIT; 
+Oper4:BIT; 
+Oper5:BIT; 
+Oper6:BIT; 
+Main_Panel:BIT; 
+HMI_Panel:BIT; 
+Any_EStop_PB_Pressed: BIT;
+Local_EStop_1_PB_Pressed: BIT;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

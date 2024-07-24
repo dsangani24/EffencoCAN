@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FLL1_String_120" Id="{6ea74158-80d4-4e0a-89ad-d0922d2d2d4e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FLL1_String_120
+VAR_IN_OUT
+	Dest: ARRAY[*] OF STRING(120);
+END_VAR
+VAR_INPUT
+	Source: STRING;
+	Start: DINT;
+	Length: DINT;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	i: DINT;	
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FOR i:= 0 TO Length DO
+	Dest[i + Start]:= Source;
+END_FOR]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_CellMode" Id="{4a3963b6-7763-462b-9446-66722986bde7}">
+    <Declaration><![CDATA[TYPE ST_CellMode :
+STRUCT
+	Manual 				: BOOL;         //IN MANUAL MODE
+	Auto				: BOOL;         //IN AUTO MODE
+	Supervisor_Mode 	: BOOL;         //IN SUPERVISOR MODE
+    AutoSelect_Toggle   : um_Toggle;    //Auto Select Toggle
+    Autoinitiate         :BOOL;          //Cell Auto Initiate
+	In_DryCycle_Select 	: BOOL;         //IN DRY CYCLE MODE
+	DryCycle_Runout		: BOOL;         //DRY CYCLE RUN OUT
+	DryCycle_ONS		: R_TRIG;       //DRY CYCLE (ONE SHOT)
+	In_Continuous_Run	: BOOL;         //IN CONTINUOUS RUN
+	Continuos_Run_ONS	: R_TRIG;       //CONTINUOUS RUN (ONE SHOT)
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

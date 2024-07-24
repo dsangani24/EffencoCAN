@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_MotorStatus" Id="{22a17f96-5698-4da9-9059-29ca16dd29ce}">
+    <Declaration><![CDATA[TYPE ST_MotorStatus :
+STRUCT
+    Running : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

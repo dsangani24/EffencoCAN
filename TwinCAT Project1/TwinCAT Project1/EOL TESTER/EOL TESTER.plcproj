@@ -18,13 +18,139 @@
     <LibraryReferences>{9fe9fd64-c8d7-42fe-a5fc-cb7c14c44ab5}</LibraryReferences>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CustomFBs\Actuator\FB_ActuatorSimple.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Actuator\Structure\ST_ActuatorConfig.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Actuator\Structure\ST_ActuatorInputs.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Actuator\Structure\ST_ActuatorOutputs.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Actuator\Structure\ST_Actuatorstatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\GateBox\GateBox_FB.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\GateBox\ST_MBMStdInput.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\GateBox\ST_MGB2IO.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\MainSequencer\DUT\ST_MainSequencerStatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\MainSequencer\MainSequencer.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Motor\FB_Motor.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Motor\ST_Motor.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Motor\ST_MotorInputs.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Motor\ST_MotorStatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Rockwell_FB\FileLevel\COP_Dynamic_String_120.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Rockwell_FB\FileLevel\COP_Dynamic_String_15.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Rockwell_FB\FileLevel\FLL1_String_120.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\Rockwell_FB\FileLevel\FLL1_String_15.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\SequenceStep\FB_SequenceStep.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\SequenceStep\ST_StepBranch_1.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\SmartLight_BNI007T\FB_BNI007T.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\SmartLight_BNI007T\SmartLight.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomFBs\SmartLight_BNI007T\ST_BNI007T.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\MAIN.TcPOU">
+    <Compile Include="POUs\Cell\Faulthistory_FB.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\Motor\Motor_FB.TcPOU">
+    <Compile Include="POUs\Cell\FB_Cell.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Cell.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_CellFaults.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_CellMode.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Error.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Estops.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Gates.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_JobSelection.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Power.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_PV_PB.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Safety.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_SmartLight.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Status.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Cell\ST_Utility.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Station\ST_StaMode.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Station\ST_StaRequest.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Station\ST_Stastatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Cell\ST_Station\ST_Station.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Effenco\E_CAN_Effenco.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\MAIN.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="POUs\SequenceStep_FB\SequenceStep_FB.TcPOU">
@@ -33,26 +159,52 @@
     <Compile Include="POUs\SequenceStep_FB\ST_StepBranch.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\TAP\E_Pressurereject.TcDUT">
+    <Compile Include="POUs\Station\TAP\E_Checkvalvereject.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\TAP\E_TapAutoSequenceSteps.TcDUT">
+    <Compile Include="POUs\Station\TAP\E_PressureStatus.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\TAP\ST_Tap\ST_TAP_PB.TcDUT">
+    <Compile Include="POUs\Station\TAP\E_PressureTolerance.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="POUs\TAP\TAP.TcPOU">
+    <Compile Include="POUs\Station\TAP\E_SenorStatus.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Station\TAP\E_TapAutoSequenceSteps.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Station\TAP\FB_TAP.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="POUs\Station\TAP\ST_Tap\ST_TAP_PB.TcDUT">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="CustomFBs" />
+    <Folder Include="CustomFBs\Actuator" />
+    <Folder Include="CustomFBs\Actuator\Enumeration" />
+    <Folder Include="CustomFBs\Actuator\Structure" />
+    <Folder Include="CustomFBs\Digital Input" />
+    <Folder Include="CustomFBs\GateBox" />
+    <Folder Include="CustomFBs\MainSequencer" />
+    <Folder Include="CustomFBs\MainSequencer\DUT" />
+    <Folder Include="CustomFBs\Motor" />
+    <Folder Include="CustomFBs\Rockwell_FB" />
+    <Folder Include="CustomFBs\Rockwell_FB\FileLevel" />
+    <Folder Include="CustomFBs\SequenceStep" />
+    <Folder Include="CustomFBs\SmartLight_BNI007T" />
     <Folder Include="DUTs" />
     <Folder Include="GVLs" />
-    <Folder Include="POUs\Motor" />
+    <Folder Include="POUs\Cell" />
+    <Folder Include="POUs\Cell\ST_Cell" />
+    <Folder Include="POUs\Cell\ST_Station" />
+    <Folder Include="POUs\Effenco" />
     <Folder Include="POUs\SequenceStep_FB" />
-    <Folder Include="POUs\TAP" />
-    <Folder Include="POUs\TAP\ST_Tap" />
+    <Folder Include="POUs\Station" />
+    <Folder Include="POUs\Station\TAP" />
+    <Folder Include="POUs\Station\TAP\ST_Tap" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
   </ItemGroup>
@@ -73,8 +225,8 @@
   <ProjectExtensions>
     <PlcProjectOptions>
       <XmlArchive>
-  <Data>
-    <o xml:space="preserve" t="OptionKey">
+        <Data>
+          <o xml:space="preserve" t="OptionKey">
       <v n="Name">"&lt;ProjectRoot&gt;"</v>
       <d n="SubKeys" t="Hashtable" ckt="String" cvt="OptionKey">
         <v>{40450F57-0AA3-4216-96F3-5444ECB29763}</v>
@@ -89,13 +241,13 @@
       </d>
       <d n="Values" t="Hashtable" />
     </o>
-  </Data>
-  <TypeList>
-    <Type n="Hashtable">System.Collections.Hashtable</Type>
-    <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
-    <Type n="String">System.String</Type>
-  </TypeList>
-</XmlArchive>
+        </Data>
+        <TypeList>
+          <Type n="Hashtable">System.Collections.Hashtable</Type>
+          <Type n="OptionKey">{54dd0eac-a6d8-46f2-8c27-2f43c7e49861}</Type>
+          <Type n="String">System.String</Type>
+        </TypeList>
+      </XmlArchive>
     </PlcProjectOptions>
   </ProjectExtensions>
 </Project>

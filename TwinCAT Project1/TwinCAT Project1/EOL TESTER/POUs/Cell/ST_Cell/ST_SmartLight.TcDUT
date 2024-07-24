@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_SmartLight" Id="{dce9931c-8bd3-4a7c-a927-715ab67a8709}">
+    <Declaration><![CDATA[TYPE ST_SmartLight :
+STRUCT
+	Green			: BOOL;  
+	Process_Fault	: BOOL;
+	InCycle			: BOOL;
+	Blue			: BOOL;
+	Orange			: BOOL;
+	White			: BOOL;
+    Flash			: BOOL;	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

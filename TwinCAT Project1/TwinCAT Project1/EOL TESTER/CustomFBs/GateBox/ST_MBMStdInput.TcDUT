@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_MBMStdInput" Id="{a602c7fb-7bf3-4067-a5e6-193fab0876f0}">
+    <Declaration><![CDATA[TYPE ST_MBMStdInput :
+STRUCT
+    Run_Mode: BIT;  //
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

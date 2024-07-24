@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Stastatus" Id="{e37371e0-11b4-4088-ad8b-4e40d30a3ea5}">
+    <Declaration><![CDATA[TYPE ST_Stastatus :
+STRUCT
+    AirOff                  : BIT; // 
+    AirOn                   : BIT; // 
+    AllParts                : BIT; // STATION HAS ALL PARTS PRESENT 
+    AllProcessesComplete    : BIT; // ALL PROCESSES COMPLETE
+    All_Tools_In_Known_Pos  : BIT; //
+    All_Faults              : BIT;// 
+    Auto                    : BIT; // STATION IN AUTO
+    ClearForTransfer        : BIT; // 
+    CommOK                  : BIT; // STATION COMMUNICATIONS ARE OK
+    DryCycle                : BIT; // STATION IN DRY CYCLE
+    Faulted                 : BIT; // STATION FAULTED
+    GasFlowOff              : BIT; // 
+    GasFlowOn               : BIT; // 
+    Held                    : BIT; // STATION HELD
+    HoldActive              : BIT; // STATION HOLD IS ACTIVE
+    Home                    : BIT; // TOOL AT HOME POSITION
+    InCycle                 : BIT; // STATION IN CYCLE
+    Load1                   : BIT; // TOOL AT LOAD POSITION 1
+    Load2                   : BIT; // TOOL AT LOAD POSITION 2
+    Manual                  : BIT; // STATION IN MANUAL
+    Message                 : BIT; // Message(s) Present
+    NoParts                 : BIT; // STATION HAS NO PARTS PRESENT
+    NoProcComp              : BIT; // NO PROCESS COMPLETE
+    NotClear                : BIT; // 
+    OK_To_Enter             : BIT; // Clear To Enter if Gate Request Has Been Made
+    PartPres                : BIT; // 
+    Proc1Comp               : BIT; // 1st PROCESS COMPLETE
+    Proc2Comp               : BIT; // 2nd PROCESS COMPLETE
+    Proc3Comp               : BIT; // 3rd PROCESS COMPLETE
+    Proc4Comp               : BIT; // 4th PROCESS COMPLETE
+    Proc5Comp               : BIT; // 5th PROCESS COMPLETE
+    Proc6Comp               : BIT; // 6th PROCESS COMPLETE
+    Proc7Comp               : BIT; // 7th PROCESS COMPLETE
+    Proc8Comp               : BIT; // 8th PROCESS COMPLETE
+    ProcEnbld               : BIT; // 
+    ProcNotEnbld            : BIT; // 
+    Sla01_ID                : BYTE; // ID PRESENT ON SLAVE#1
+    Sla02_ID                : BYTE; // ID PRESENT ON SLAVE#2
+    SteppersReset           : BIT; // 
+    Tool_Monitor            : DINT;
+    Unload1                 : BIT; // TOOL AT UNLOAD POSITION 1
+    UnLoad2                 : BIT; // TOOL AT UNLOAD POSITION 2
+    WaterFlowOff            : BIT; // 
+    WaterFlowOn             : BIT; // 
+    Work1                   : BIT; // TOOL AT WORK POSITION 1
+    Work2                   : BIT; // TOOL AT WORK POSITION 2
+    Work3                   : BIT; // TOOL AT WORK POSITION 3
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

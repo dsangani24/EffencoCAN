@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Motor" Id="{676a5b4d-6a5e-4d20-8f63-88d75a1575bb}">
+    <Declaration><![CDATA[TYPE ST_Motor :
+STRUCT
+    Start_Safeties              : BOOL; //Start Safety
+    Start AT%Q*                 : BOOL; //Start
+    Running                     : BOOL; //Running
+    Stop                        : BOOL; // Motor Stop
+    Manual_Start_PB             : BOOL; //Manual Start PV_PB
+    Manual_Stop_PB              : BOOL; //Manual Stop PV_PB
+    Start_Fault                 : BOOL; //Start_Fault
+    OL_Fault                    : BOOL; //Overload_Fault
+    Idle_Standby                : BOOL; //Idle_Standby
+    Idle_OFF                    : BOOL; //Idle_OFF
+    RunOut                      : BOOL; //RunOut
+    ONS                         : R_TRIG; //ONS
+    
+    Motortimedelay              : TON  := (PT := T#2S); //Motor Timer delay
+    MotortimeOFFdelay           : TON;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

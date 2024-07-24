@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_Power" Id="{9c9d90e6-4abe-47b2-beca-5331dacc6b04}">
+    <Declaration><![CDATA[TYPE ST_Power :
+STRUCT
+Gen_Safety	:BOOL;		//General_Safety_OK(COntrol POwer)(Gate Closed)(Air OK)
+PowerOn		:BOOL; 		//CONTROL POWER ON
+EStops		:ST_Estops;	//NO E-STOPS BUTTONS PRESSED
+GatesClosed	:BOOL; 		//CELL SAFETY GATES CLOSED & RESET
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

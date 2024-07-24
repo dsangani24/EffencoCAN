@@ -1,0 +1,522 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_TAP" Id="{c4763be6-dcf1-4d56-aaaa-36da68c937b8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_TAP
+VAR_INPUT    
+    stCell                          : REFERENCE TO ST_Cell;
+END_VAR
+VAR
+	TAP_LevelSensor AT%I*	        : DINT;                     //Level Sensor
+    TAP_TempSensor AT%I*            : DINT;                     //Temp in Celsius
+	TE_TapPressureSensor_PT1 AT%I*    : INT;                      //Pressure Sensor in PSI 
+    TE_TapPressureSensor_PT2 AT%I*    : INT;                      //   
+    fbtapmotor                      : FB_Motor;                 //HPU Motor
+	SolenoidFluidValve_SVD1A        : FB_ActuatorSimple;
+    SolenoidFluidValve_SVD1B        : FB_ActuatorSimple;
+    SolenoidFluidValve_SP2          : FB_ActuatorSimple;
+    stTAPStation                    : ST_Station;
+    stTAPSta_HMI                    : ST_TAP_PB;
+    
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[M_Motor();]]></ST>
+    </Implementation>
+    <Folder Name="Control Devices" Id="{a4ae2185-6611-490a-b303-e71e0a653cf4}" />
+    <Folder Name="Enumeration" Id="{42c5416e-3b68-43b8-b545-cebb16d6e4cf}" />
+    <Folder Name="Structure" Id="{da8dbc02-fd8d-4dbe-b0c2-a9d33bbcf03b}" />
+    <Method Name="M_Faults" Id="{5fcbd015-ad0d-4c1a-9ea7-50b97ebe5dd9}">
+      <Declaration><![CDATA[METHOD M_Faults : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_LevelSensor" Id="{0cab8b09-f6aa-4a34-a76f-533499f94f33}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_LevelSensor : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Monitor" Id="{dcf0f4be-0508-4e1c-8738-62fe2b96d089}">
+      <Declaration><![CDATA[METHOD M_Monitor : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Motor" Id="{b6894895-a8d7-4f27-9369-c806e0075487}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_Motor
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbtapmotor.SafetyOk := stCell.Safety.SafetyOk;
+fbtapmotor();
+
+IF HMI.MotorStartPB AND ManualOK THEN
+fbtapmotor.M_Start();
+ELSIF HMI.MotorStopPB THEN
+    fbtapmotor.M_Stop();
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ResetFault" Id="{f9c72113-4680-45d1-b8f7-28872e8a6e3f}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ResetFault
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbtapmotor.M_ResetFault();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Sequence" Id="{1378c4d9-6f23-4556-91bc-e69ce8379978}">
+      <Declaration><![CDATA[METHOD PRIVATE M_Sequence
+VAR_INPUT
+	AutoInitiate 	    : BOOL;
+	AutoFirstStep	    : DINT;
+END_VAR                 
+VAR_INST                
+	fbSequenceStep		       : FB_SequenceStep;
+	FirstEntry		           : BOOL := TRUE;
+	(*CaseEntry		           : ARRAY [1..20] OF BOOL := [20(TRUE)];*)
+	PressureAtEntryP1 AT%I*    : INT;         //P1 Pressure in PSI for UUT
+    PressureAtExitP2  AT%I*    : INT;        // P2 Pressure in PSI for UUT
+    Maxtemp                    : INT :=110;   //Max temp setup value
+    InitialPressurePT1         : INT :=30;    //Initial Pressure PT1      
+    ExpectedPressureP1         : INT;        // P1 Expected pressure UP1 in PSI_COnstant Value
+    ExpectedPressureP2         : INT;        // P2 Expected pressure UP2 in PSI_COnstant Value
+    PressuredropPF             : INT;        // Pressure Drop thorugh Filter_Contant Value
+    PressureCheckStatus        : INT;        // Pressure Check Value
+    SensorCheckStatus          : INT;        // Sensor Check Value and status 
+    CheckValveStatus           : INT;        // Valve Check Value and Status 
+    FailedintitialPressure     : INT;        // Initial Pressure check failed  
+    Tolerance                  : INT;        
+	FailReasonStr	           : STRING;     // Reason for Test Fail 
+    PassReasonStr              : STRING;     // Preason for Test Pass 
+    FailPressureStr            : STRING;     // Pressure Fail Test Reason 
+    FillingupComplete          : STRING;     //Process Complete  
+    TEtapstarttimer            : TON;        // Tap Test Start timer   
+    TEMotorTimer               : TON;        // Tap TE-HPU motor start timer
+    TEMOtorruntimer            : TON;        // Tap TE-HPU motor running timer
+    TEmotorostoptimer          : TON;        // Tap TE-HPU motor stop timer
+    UUTmotorONtimer            : TON;        // Tap UUT-motor timer on 
+    UUTmotorOFFtimer           : TON;        // Tap UUT-motor timer off 
+    LeakDecayTimer             : TON;        // Leak Delay Timer
+    DrainONTimer               : TON;        // System Drain Timer
+END_VAR                        
+VAR                            
+    Branch                     : ARRAY [1..16] OF ST_StepBranch;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF FirstEntry THEN
+	fbSequenceStep.CurrentStep := AutoFirstStep;
+END_IF
+
+IF AutoInitiate THEN
+FirstEntry := FALSE;
+CASE fbSequenceStep.CurrentStep OF
+	E_TapAutoSequenceSteps.STARTING_CONDITIONS:
+		IF fbSequenceStep.Entry THEN
+            SolenoidFluidValve_SP2.M_Retract();
+            SolenoidFluidValve_SVD1A.M_Retract();
+            SolenoidFluidValve_SVD1B.M_Advance();            
+		END_IF
+        
+        // Execute During
+        TEtapstarttimer(IN := FALSE);
+        TEtapstarttimer(IN := TRUE, PT := T#500MS);
+                
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.TE_RUN_MOTOR;
+        Branch[1].Condition[1] := stTAPStation.Status.AllParts;
+        Branch[1].Condition[2] := (TAP_TempSensor < Maxtemp) AND (TE_TapPressureSensor_PT1<InitialPressurePT1);
+        Branch[1].Condition[3] := SolenoidFluidValve_SP2.stStatus.RetractedFeedback;
+        Branch[1].Condition[4] := SolenoidFluidValve_SVD1A.stStatus.RetractedFeedback;
+        Branch[1].Condition[5] := SolenoidFluidValve_SVD1B.stStatus.AdvancedFeedback;
+        Branch[1].Condition[6] := TEtapstarttimer.Q AND NOT TEMOtorruntimer.Q;
+        Branch[1].Condition[7] := GVL.zz_Deep.0; //Need to add condition for UUT Unit
+        
+        fbSequenceStep(Branch := Branch);
+
+	E_TapAutoSequenceSteps.TE_RUN_MOTOR:
+		// Action
+		IF fbSequenceStep.Entry THEN
+		fbtapmotor.M_Start();
+		END_IF
+        
+        TEMOtorruntimer(IN := FALSE);
+        TEMOtorruntimer(IN := TRUE, PT := T#5S);
+                
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.START_UUT_MOTOR;
+        Branch[1].Condition[1] := stTAPStation.Status.Auto AND stCell.Status.All_in_Auto;
+        Branch[1].Condition[2] := TEMOtorruntimer.Q;
+        Branch[1].condition[3] := fbtapmotor.stmotorinputs.Running; //Need to add contion for input that TE motor is running
+        Branch[1].Condition[4] := //Need to add extra conditon to check UUt Motor 
+               
+        fbSequenceStep(Branch := Branch);
+        
+	E_TapAutoSequenceSteps.START_UUT_MOTOR:	
+        //Action
+        IF fbSequenceStep.Entry THEN
+         ///Condition for next step: UUT MOTOR RAMP-UP TO SPEED= "UMLS" 
+		END_IF
+        
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.UUT_MOTOR_DELAY;
+        Branch[1].Condition[1] := //Need to add extra condition TO EXECUTE UUT MOTOR DELAY            
+ 
+        fbSequenceStep(Branch := Branch);
+        
+	E_TapAutoSequenceSteps.UUT_MOTOR_DELAY:
+		// Action
+		IF fbSequenceStep.Entry THEN
+		//Condition for next step: UUT Motor Ramp-up to speed; "UMD1"
+        END_IF
+        
+        UUTmotorONtimer(IN := FALSE);
+        UUTmotorONtimer(IN := TRUE, PT := T#5S);
+        
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.INITIAL_PRESSURE_TEST;
+        Branch[1].Condition[1] := UUTmotorONtimer.Q;
+        Branch[1].Condition[2] := //condition needs to add: Motor speed for filling needs to 100RPm and time delay needs to 5_10 seconds
+                          
+        fbSequenceStep(Branch := Branch);
+         
+    E_TapAutoSequenceSteps.INITIAL_PRESSURE_TEST:
+        // Action         
+        LeakDecayTimer(IN := PressureAtEntryP1 = ExpectedPressureP1 + Tolerance OR ExpectedPressureP1 - Tolerance , PT := T#5S);
+        IF  LeakDecayTimer.Q THEN
+        IF ExpectedPressureP1 < PressureAtEntryP1 - Tolerance OR ExpectedPressureP1 > PressureAtEntryP1 + Tolerance THEN
+		PressureCheckStatus := E_PressureStatus.FillingupTestFail;
+		FailReasonStr := TO_STRING(E_PressureStatus.FillingupTestFail);
+       	ELSE
+		PressureCheckStatus := E_PressureStatus.FillingupTestPass;
+        PassReasonStr := TO_STRING(E_PressureStatus.FillingupTestPass); 
+       	END_IF
+	    END_IF    
+              
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.COMPLETE ;
+        Branch[1].Condition[1] := PressureCheckStatus := 10;
+ 
+         // Branch #2 (Move to Next test)
+        Branch[2].NextStep     := E_TapAutoSequenceSteps.TE_STOP_MOTOR ;
+        Branch[2].Condition[1] := PressureCheckStatus := 20;
+                      
+        fbSequenceStep(Branch := Branch);
+        
+	E_TapAutoSequenceSteps.TE_STOP_MOTOR:
+		// Action
+		IF fbSequenceStep.Entry THEN
+		   fbtapmotor.M_Stop();
+		END_IF
+        
+        TEmotorostoptimer( IN:= FALSE );
+        TEmotorostoptimer( IN:= TRUE ,PT := T#5S);
+        
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.STOP_UUT_MOTOR;
+        Branch[1].Condition[1] := NOT fbtapmotor.st_motorinputs.Running;
+        Branch[1].Condition[2] := TEmotorostoptimer.Q;       
+       
+        fbSequenceStep(Branch := Branch); 
+               
+    E_TapAutoSequenceSteps.STOP_UUT_MOTOR:
+        //Action
+        IF (*add action to stoppped UUt motor*)     THEN     //Condition for next Setp: Stop UUT Motor
+        END_IF
+        
+        UUTmotorOFFtimer ( IN:= FALSE );
+        UUTmotorOFFtimer (IN:= TRUE , PT := T#5S);
+
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.END_FILLING_PHASE ;
+        Branch[1].Condition[1] := (PressureCheckStatus := 10) AND NOT (PressureCheckStatus := 20);
+        Branch[1].Condition[2] := UUTmotorOFFtimer.Q;
+                
+
+        fbSequenceStep(Branch := Branch); 
+    
+    E_TapAutoSequenceSteps.END_FILLING_PHASE:
+        //Action
+        IF fbSequenceStep.Entry THEN
+        IF NOT fbtapmotor.stmotorinputs.Running AND (*CONDITION FOR UUT TO STOPPED VERIFED*) THEN          
+            SolenoidFluidValve_SP2.M_Advance();
+            SolenoidFluidValve_SVD1A.M_Retract();
+            SolenoidFluidValve_SVD1B.M_Advance();
+            FillingupComplete := TO_STRING (E_TapAutoSequenceSteps.END_FILLING_PHASE); 
+		END_IF
+        END_IF
+        
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.START_STATIC_PRESSURE_TEST;
+        Branch[1].Condition[1] := PressureCheckStatus := 20;
+        Branch[1].Condition[2] := TAP_TempSensor < Maxtemp AND TE_TapPressureSensor_PT1 > InitialPressurePT1;
+        Branch[1].Condition[3] := SolenoidFluidValve_SP2.stStatus.AdvancedFeedback;
+        Branch[1].Condition[4] := SolenoidFluidValve_SVD1A.stStatus.RetractedFeedback;
+        Branch[1].Condition[5] := SolenoidFluidValve_SVD1B.stStatus.AdvancedFeedback;
+        Branch[1].Condition[6] := NOT fbtapmotor.stmotorinputs.Running;
+
+        fbSequenceStep(Branch := Branch); 
+
+    E_TapAutoSequenceSteps.START_STATIC_PRESSURE_TEST:
+		// Action
+		IF fbSequenceStep.Entry THEN
+		fbtapmotor.M_Start();
+		END_IF        
+        
+        TEMOtorruntimer(IN := FALSE);
+        TEMOtorruntimer(IN := TRUE, PT := T#5S);
+        
+      
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.OUTLET_PRESSURE_TEST;
+        Branch[1].Condition[1] := TEMOtorruntimer.Q;
+        Branch[1].condition[2] := fbtapmotor.stmotorinputs.Running; //Need to add contion for input that TE motor is running
+        Branch[1].Condition[3] := TE_TapPressureSensor_PT2 = ExpectedPressureP2 + Tolerance OR ExpectedPressureP2 - Tolerance;
+ 
+       fbSequenceStep(Branch := Branch); 
+
+    E_TapAutoSequenceSteps.OUTLET_PRESSURE_TEST:
+        //Action
+        IF  fbSequenceStep.Entry THEN
+        IF TE_TapPressureSensor_PT1 = (ExpectedPressureP2 + Tolerance) OR (ExpectedPressureP2 - Tolerance) THEN
+            fbtapmotor.M_Stop();            
+        END_IF
+        END_IF    
+        
+        TEmotorostoptimer(IN :=FALSE); 
+        TEmotorostoptimer(IN:= TRUE ,PT := T#2S);
+        
+        IF TEmotorostoptimer.Q AND (PressureAtEntryP1 = (ExpectedPressureP2 + Tolerance) OR (ExpectedPressureP2 - Tolerance)) THEN
+            PressureCheckStatus := E_PressureStatus.PressuretestOk;
+		    PassReasonStr := TO_STRING(E_PressureStatus.PressuretestOk);
+        ELSIF PressureAtExitP2 <> ExpectedPressureP2 THEN
+                PressureCheckStatus := E_PressureStatus.InletLeakDetect;
+                FailReasonStr := CONCAT(CONCAT(TO_STRING(E_PressureStatus.PressuretestOk), ' AND '), TO_STRING(E_PressureStatus.InletLeakDetect));
+        ELSIF PressureCheckStatus = E_PressureStatus.OilLeakDetect;
+                FailPressureStr := TO_STRING(E_PressureStatus.OilLeakDetect);
+			END_IF
+        END_IF  
+        
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.COMPLETE;
+        Branch[1].Condition[1] := (PressureCheckStatus = E_PressureStatus.InletLeakDetect) OR (PressureCheckStatus = E_PressureStatus.OilLeakDetect);        
+
+        // Branch #2
+        Branch[2].NextStep     := E_TapAutoSequenceSteps.END_STAITC_PRESSURE_TEST;
+        Branch[2].Condition[1] := PressureCheckStatus = 30 ;
+        Branch[2].Condition[2] := TEmotorostoptimer.Q;
+
+        fbSequenceStep(Branch := Branch); 
+
+    E_TapAutoSequenceSteps.END_STAITC_PRESSURE_TEST:
+        //Action     
+        IF fbSequenceStep.Entry THEN
+             SolenoidFluidValve_SP2.M_Advance();
+                SolenoidFluidValve_SVD1A.M_Retract();
+                   SolenoidFluidValve_SVD1B.M_Retract();       
+        END_IF     
+     
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.START_FUNCTIONAL_TEST;
+        Branch[1].Condition[1] := TAP_TempSensor < Maxtemp ;
+        Branch[1].Condition[2] := SolenoidFluidValve_SP2.stStatus.AdvancedFeedback;
+        Branch[1].Condition[3] := SolenoidFluidValve_SVD1A.stStatus.RetractedFeedback;
+        Branch[1].Condition[4] := SolenoidFluidValve_SVD1B.stStatus.RetractedFeedback;
+        Branch[1].Condition[5] := NOT fbtapmotor.stmotorinputs.Running;
+  
+        fbSequenceStep(Branch := Branch); 
+          
+     E_TapAutoSequenceSteps.START_FUNCTIONAL_TEST: 
+        //Actiion
+        IF fbSequenceStep.Entry THEN
+         ///Condition for next step: UUT MOTOR tURN ON AND RAMP-UP TO SPEED= "UMD3" 
+ 		END_IF
+
+       UUTmotorONtimer(IN := FALSE); 
+       UUTmotorONtimer(IN := TRUE, PT := T#5S);
+
+       
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.UUT_SENSOR_CHECK;
+        Branch[1].Condition[2] := UUTmotorONtimer.Q;
+        Branch[1].Condition[3] := //condition needs to add: mONITOR Motor speed for filling needs to 100RPm and time delay needs to 5_10 seconds
+        
+        fbSequenceStep(Branch := Branch); 
+       
+      E_TapAutoSequenceSteps.UUT_SENSOR_CHECK:
+       //Action
+       IF fbSequenceStep.Entry THEN
+           IF 
+               (PressureAtExitP2 < TE_TapPressureSensor_PT1 + Tolerance) OR (PressureAtExitP2 > TE_TapPressureSensor_PT1 - Tolerance) THEN 
+               SensorCheckStatus := E_SenorStatus.P2UUTSensorOK;
+               PassReasonStr     := TO_STRING(E_SenorStatus.P2UUTSensorOK);
+            ELSE
+                SensorCheckStatus := E_SenorStatus.P2UUTSensorFail;
+                FailReasonStr     := TO_STRING(E_SenorStatus.P2UUTSensorFail);
+           END_IF
+           
+            IF 
+               (PressureAtExitP2 = PressureAtEntryP1 - PressuredropPF) THEN
+               SensorCheckStatus := E_SenorStatus.P1UUTSensorOK ;
+               PassReasonStr     := CONCAT(CONCAT(TO_STRING(E_SenorStatus.P1UUTSensorOK), ' AND '), TO_STRING(E_SenorStatus.Filterisdetected));   
+		   END_IF
+           
+           IF (PressureAtExitP2 < PressureAtEntryP1 + Tolerance) OR (PressureAtExitP2 > PressureAtEntryP1 - Tolerance) THEN
+               SensorCheckStatus := E_SenorStatus.Filterismissing;
+               FailReasonStr     := TO_STRING(E_SenorStatus.Filterismissing);       
+           ELSE
+               SensorCheckStatus := E_SenorStatus.P1UUTSensorFail;
+               FailReasonStr     := TO_STRING(E_SenorStatus.P1UUTSensorFail);
+           END_IF
+		   END_IF
+	   
+          
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.COMPLETE ;
+        Branch[1].Condition[1] := (SensorCheckStatus := 10) OR (SensorCheckStatus := 50) OR (SensorCheckStatus := 20);
+
+          // Branch #1
+        Branch[2].NextStep     := E_TapAutoSequenceSteps.END_FUNCTIONAL_TEST;
+        Branch[2].Condition[1] := (SensorCheckStatus := 30) OR (SensorCheckStatus :=60); //Verify and needs to add one more value during P1 IS oKAY         
+        
+        fbSequenceStep(Branch := Branch); 
+       
+      E_TapAutoSequenceSteps.END_FUNCTIONAL_TEST:
+       //Action
+       IF fbSequenceStep.Entry THEN
+         SolenoidFluidValve_SP2.M_Advance();
+            SolenoidFluidValve_SVD1A.M_Advance();
+                SolenoidFluidValve_SVD1B.M_Retract();
+        END_IF        
+        
+          // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.START_TAP_CHECKVALVE_TEST;
+        Branch[1].Condition[1] := SolenoidFluidValve_SP2.stStatus.AdvancedFeedback;
+        Branch[1].Condition[2] := SolenoidFluidValve_SVD1A.stStatus.AdvancedFeedback;
+        Branch[1].Condition[3] := SolenoidFluidValve_SVD1B.stStatus.RetractedFeedback;
+        Branch[1].Condition[4] := NOT fbtapmotor.stmotorinputs.Running;
+               
+        fbSequenceStep(Branch := Branch); 
+       
+      E_TapAutoSequenceSteps.START_TAP_CHECKVALVE_TEST:
+       //Action
+       IF fbSequenceStep.Entry THEN
+		fbtapmotor.M_Start();        
+	    END_IF
+        
+        TEMOtorruntimer(IN :=FALSE);
+        TEMOtorruntimer(IN := TRUE, PT := T#30S);
+                
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.CHECK_VALVE_TEST;
+        Branch[1].Condition[1] := TEMOtorruntimer.Q;
+        Branch[1].condition[2] := fbtapmotor.stmotorinputs.Running;
+               
+        fbSequenceStep(Branch := Branch);            
+        
+       E_TapAutoSequenceSteps.CHECK_VALVE_TEST:
+       //Action
+       IF fbSequenceStep.Entry THEN       
+          IF ((PressureAtExitP2 < ExpectedPressureP2 + Tolerance) OR (PressureAtExitP2 > ExpectedPressureP2 - Tolerance)) AND PressureAtEntryP1 := 0 THEN
+              CheckValveStatus := E_Checkvalvereject.CheckvalveOk;
+              PassReasonStr    := TO_STRING(E_Checkvalvereject.CheckvalveOk);
+          ELSE
+             CheckValveStatus := E_Checkvalvereject.Checkvalvefailure;
+             FailReasonStr    := TO_STRING(E_Checkvalvereject.Checkvalvefailure);                
+          END_IF  
+        END_IF
+        
+         //Need add logic to store P1, P2 and PT1
+                       
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.END_TAP_CHECKVALVE_TEST;
+        Branch[1].condition[1] := fbtapmotor.stmotorinputs.Running; //Need to add contion for input that TE motor is running
+        Branch[1].Condition[2] := (CheckValveStatus := 10) OR (CheckValveStatus := 20);
+               
+        fbSequenceStep(Branch := Branch);            
+        
+       E_TapAutoSequenceSteps.END_TAP_CHECKVALVE_TEST:
+       //Action
+       IF fbSequenceStep.Entry THEN
+            fbtapmotor.M_Stop();
+            TEmotorostoptimer( IN:= fbtapmotor.M_Stop AND NOT fbtapmotor.stmotorinputs.Running ,PT := T#5S);
+        END_IF
+	        
+       IF TEmotorostoptimer.Q THEN
+          SolenoidFluidValve_SP2.M_Retract();
+          SolenoidFluidValve_SVD1A.M_Retract();
+          SolenoidFluidValve_SVD1B.M_Advance();
+          //Condition for next step: UUT Motor Ramp-up to speed; "UMD1"
+        UUTmotorONtimer(IN := (*NEED TO ADD COMPLETE CONDITION *)AND NOT UUTmotorOFFtimer.Q, PT := T#5S);
+       END_IF         		
+       
+         // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.START_DRAINING_TEST;
+        Branch[1].Condition[1] := UUTmotorONtimer.Q;
+        Branch[1].Condition[2] := NOT fbtapmotor.stmotorinputs.Running; //Need to add contion for input that TE motor is running
+        Branch[1].Condition[3] := SolenoidFluidValve_SP2.stStatus.RetractedFeedback;
+        Branch[1].Condition[4] := SolenoidFluidValve_SVD1A.stStatus.RetractedFeedback;
+        Branch[1].Condition[5] := SolenoidFluidValve_SVD1B.stStatus.AdvancedFeedback;
+        
+        fbSequenceStep(Branch := Branch);            
+        
+       E_TapAutoSequenceSteps.START_DRAINING_TEST:
+       //Action
+       IF fbSequenceStep.Entry THEN                       
+           DrainONTimer (IN:= TRUE, PT:= T#5S);
+       END_IF
+ 
+        // Branch #1
+        Branch[1].NextStep     := E_TapAutoSequenceSteps.COMPLETE;
+        Branch[1].Condition[1] := DrainONTimer.Q;
+    //  Branch[1].Condition[2] := (PressureCheckStatus := 10) OR (PressureCheckStatus := 50) OR (PressureCheckStatus := 60);
+    //  Branch[1].Condition[3] := (E_SenorStatus := 40); 
+                        
+        fbSequenceStep(Branch := Branch); 
+        
+       E_TapAutoSequenceSteps.COMPLETE:
+       //Action
+       IF fbSequenceStep.Entry THEN 
+         fbtapmotor.M_Stop()
+         (*UUT Motor needs to stop*)
+         SolenoidFluidValve_SP2.M_Retract();
+            SolenoidFluidValve_SVD1A.M_Retract();
+                SolenoidFluidValve_SVD1B.M_Advance();       
+       END_IF
+END_CASE
+
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TransmissionFluidPressure" Id="{2dd375cd-ab67-42b2-9232-36e601bf5fbc}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_TransmissionFluidPressure : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_TransmissionFluidValve" Id="{835ab846-28b4-4034-9304-6912286dbaa0}" FolderPath="Control Devices\">
+      <Declaration><![CDATA[METHOD PRIVATE M_TransmissionFluidValve
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+  </POU>
+</TcPlcObject>

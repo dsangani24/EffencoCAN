@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <DUT Name="ST_JobSelection" Id="{5c01d9ed-7c66-4c24-83c4-3535a5834c3e}">
+    <Declaration><![CDATA[TYPE ST_JobSelection :
+STRUCT
+Auto_Job_Mode			: BOOL;
+Part_Sel_Chng_OK		: BOOL;
+HMI_Selected_Job		: DINT;
+Job_Number_Selected		: DINT;
+Job_Number_Selected_Last: DINT;
+Job_Change_Started		: BOOL;
+Job_Change_Delay		: TON;	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
